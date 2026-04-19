@@ -15,3 +15,6 @@ generator/_tmp/
 
 # Logs
 *.log
+
+# Tijdelijke bundle van Cowork-sessie
+update.bundle
