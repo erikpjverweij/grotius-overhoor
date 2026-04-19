@@ -1,0 +1,17 @@
+# OS-rommel
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor-rommel
+.vscode/
+.idea/
+*.swp
+*~
+
+# Tijdelijke generator-bestanden (komt in Fase 3)
+generator/_tmp/
+*.tmp
+
+# Logs
+*.log

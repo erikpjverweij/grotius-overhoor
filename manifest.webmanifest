@@ -1,0 +1,26 @@
+{
+  "name": "Grotius Overhoor",
+  "short_name": "Grotius",
+  "description": "Overhoorapp voor de Grotius-specialisatieopleiding Onrechtmatige daad & Aansprakelijkheid.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8fafc",
+  "theme_color": "#1e3a8a",
+  "lang": "nl-NL",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

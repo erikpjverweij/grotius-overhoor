@@ -1,0 +1,139 @@
+{
+  "meta": {
+    "generated_at": "2026-04-19T00:00:00Z",
+    "version": "0.1-mock",
+    "note": "Mock-data voor app-test. Echte kaarten worden in Fase 3 gegenereerd uit de syllabi."
+  },
+  "cards": [
+    {
+      "id": "01-mock-art-6162",
+      "module": "01",
+      "module_titel": "Algemene inleiding aansprakelijkheidsrecht",
+      "lesdag_datum": "2026-03-09",
+      "bron": "MOCK — Syllabus Van Dam",
+      "type": "artikel",
+      "vraag": "Welke vijf elementen vereist artikel 6:162 BW voor aansprakelijkheid uit onrechtmatige daad?",
+      "antwoord": "(1) Een onrechtmatige daad, (2) toerekenbaarheid, (3) schade, (4) causaal verband tussen daad en schade en (5) relativiteit.",
+      "citaat": "MOCK CITAAT — wordt vervangen door echte tekst uit syllabus.",
+      "context": "Het basisartikel waarop het hele aansprakelijkheidsrecht uit onrechtmatige daad rust.",
+      "vindplaats": "Artikel 6:162 BW"
+    },
+    {
+      "id": "01-mock-kelderluik",
+      "module": "01",
+      "module_titel": "Algemene inleiding aansprakelijkheidsrecht",
+      "lesdag_datum": "2026-03-09",
+      "bron": "MOCK — Syllabus Van Dam",
+      "type": "arrest",
+      "vraag": "Welke vier gezichtspunten gebruikt de Hoge Raad in Kelderluik om gevaarzetting te beoordelen?",
+      "antwoord": "(1) Waarschijnlijkheid van onoplettendheid, (2) kans op ongeval, (3) ernst van het te verwachten letsel, (4) bezwaarlijkheid van veiligheidsmaatregelen.",
+      "citaat": "MOCK CITAAT — komt later letterlijk uit Van Dam.",
+      "context": "Het arrest geeft het toetsingskader voor gevaarzetting; nog steeds dragend in de huidige rechtspraak.",
+      "vindplaats": "HR 5 november 1965, ECLI:NL:HR:1965:AB7079, NJ 1966/136 (Kelderluik)"
+    },
+    {
+      "id": "01-mock-relativiteit",
+      "module": "01",
+      "module_titel": "Algemene inleiding aansprakelijkheidsrecht",
+      "lesdag_datum": "2026-03-09",
+      "bron": "MOCK — Syllabus Van Dam",
+      "type": "leerstuk",
+      "vraag": "Wat houdt het relativiteitsvereiste van artikel 6:163 BW in?",
+      "antwoord": "Geen verplichting tot schadevergoeding bestaat als de geschonden norm niet strekt tot bescherming tegen de schade zoals de benadeelde die heeft geleden.",
+      "citaat": "MOCK CITAAT.",
+      "context": "Filtert aansprakelijkheid voor schade die buiten het beschermingsbereik van de norm valt.",
+      "vindplaats": "Artikel 6:163 BW"
+    },
+    {
+      "id": "02-mock-art-6174",
+      "module": "02",
+      "module_titel": "Aansprakelijkheid zaken stoffen en producten",
+      "lesdag_datum": "2026-03-09",
+      "bron": "MOCK — Syllabus Franken",
+      "type": "artikel",
+      "vraag": "Wie is aansprakelijk op grond van artikel 6:174 BW voor schade door een gebrekkige opstal?",
+      "antwoord": "De bezitter van de opstal, ongeacht of hem schuld treft. Risicoaansprakelijkheid die berust op het gebrek van de opstal zelf.",
+      "citaat": "MOCK CITAAT — Franken-syllabus.",
+      "context": "Belangrijk in zaken over wegen, gebouwen en leidingen; vaak combinatie met 6:162 BW.",
+      "vindplaats": "Artikel 6:174 BW"
+    },
+    {
+      "id": "02-mock-wilnis",
+      "module": "02",
+      "module_titel": "Aansprakelijkheid zaken stoffen en producten",
+      "lesdag_datum": "2026-03-09",
+      "bron": "MOCK — Syllabus Franken",
+      "type": "arrest",
+      "vraag": "Welk gezichtspuntenkader formuleerde de Hoge Raad in het Wilnis-arrest voor het beoordelen van een gebrekkige opstal?",
+      "antwoord": "Maatschappelijke functie, te verwachten gebruik, kans op verwezenlijking van het gevaar, mogelijke ernst van de gevolgen en bezwaarlijkheid van voorzorgsmaatregelen.",
+      "citaat": "MOCK CITAAT.",
+      "context": "Maakt 6:174 BW een normatief in plaats van puur technisch toetsingskader.",
+      "vindplaats": "HR 17 december 2010, ECLI:NL:HR:2010:BN6236, NJ 2012/155 (Wilnis)"
+    },
+    {
+      "id": "02-mock-productaansprakelijkheid",
+      "module": "02",
+      "module_titel": "Aansprakelijkheid zaken stoffen en producten",
+      "lesdag_datum": "2026-03-09",
+      "bron": "MOCK — Syllabus Franken",
+      "type": "leerstuk",
+      "vraag": "Wat is een 'gebrekkig product' in de zin van artikel 6:186 BW?",
+      "antwoord": "Een product dat niet de veiligheid biedt die men daarvan mag verwachten, gelet op alle omstandigheden, in het bijzonder presentatie, redelijkerwijs te verwachten gebruik en tijdstip van in het verkeer brengen.",
+      "citaat": "MOCK CITAAT.",
+      "context": "Implementeert de Europese Productaansprakelijkheidsrichtlijn; risicoaansprakelijkheid voor de producent.",
+      "vindplaats": "Artikel 6:186 BW"
+    },
+    {
+      "id": "05-mock-art-6170",
+      "module": "05",
+      "module_titel": "Hulppersonen en vertegenwoordigers",
+      "lesdag_datum": "2026-03-25",
+      "bron": "MOCK — Syllabus ondergeschiktenaansprakelijkheid",
+      "type": "artikel",
+      "vraag": "Onder welke voorwaarden is de werkgever aansprakelijk voor fouten van een ondergeschikte op grond van artikel 6:170 BW?",
+      "antwoord": "Vereist zijn: (1) een fout van een ondergeschikte, (2) een dienstverband of vergelijkbare gezagsrelatie, en (3) functioneel verband tussen de fout en de aan de ondergeschikte opgedragen taak.",
+      "citaat": "MOCK CITAAT.",
+      "context": "Centrale risicoaansprakelijkheid in arbeidssituaties; vooral relevant bij geweld, fraude of verkeersfouten van werknemers.",
+      "vindplaats": "Artikel 6:170 BW"
+    },
+    {
+      "id": "05-mock-art-6171",
+      "module": "05",
+      "module_titel": "Hulppersonen en vertegenwoordigers",
+      "lesdag_datum": "2026-03-25",
+      "bron": "MOCK — Syllabus ondergeschiktenaansprakelijkheid",
+      "type": "artikel",
+      "vraag": "Wanneer is een opdrachtgever op grond van artikel 6:171 BW aansprakelijk voor fouten van een niet-ondergeschikte?",
+      "antwoord": "Als de fout is gemaakt door een niet-ondergeschikte die in opdracht van de opdrachtgever werkzaamheden verricht ter uitoefening van diens bedrijf, en de fout daarmee samenhangt.",
+      "citaat": "MOCK CITAAT.",
+      "context": "Beperkter dan 6:170 BW; eenheidsbedrijf-criterium speelt een grote rol.",
+      "vindplaats": "Artikel 6:171 BW"
+    },
+    {
+      "id": "05-mock-functioneel-verband",
+      "module": "05",
+      "module_titel": "Hulppersonen en vertegenwoordigers",
+      "lesdag_datum": "2026-03-25",
+      "bron": "MOCK — Syllabus ondergeschiktenaansprakelijkheid",
+      "type": "term",
+      "vraag": "Wat wordt verstaan onder het 'functioneel verband' in artikel 6:170 BW?",
+      "antwoord": "De fout moet zijn begaan tijdens of in verband met de uitoefening van de opgedragen taak. Niet alleen letterlijke werkzaamheden, ook fouten die in de werksfeer worden gemaakt vallen eronder.",
+      "citaat": "MOCK CITAAT.",
+      "context": "Ruim uitgelegd door de Hoge Raad — beslissend is of de werkzaamheden de fout hebben begunstigd of in stand gehouden.",
+      "vindplaats": "Artikel 6:170 BW; HR-jurisprudentie ondergeschiktenaansprakelijkheid"
+    },
+    {
+      "id": "05-mock-vehof",
+      "module": "05",
+      "module_titel": "Hulppersonen en vertegenwoordigers",
+      "lesdag_datum": "2026-03-25",
+      "bron": "MOCK — Syllabus ondergeschiktenaansprakelijkheid",
+      "type": "arrest",
+      "vraag": "Wat besliste de Hoge Raad in het arrest Vehof/Helvetia over de aansprakelijkheid van een werkgever voor opzettelijke geweldsdelicten van een werknemer?",
+      "antwoord": "Ook bij opzettelijk gepleegde misdrijven kan functioneel verband bestaan, mits de werkzaamheden de gelegenheid hebben geboden of de kans op de fout hebben verhoogd.",
+      "citaat": "MOCK CITAAT.",
+      "context": "Demonstreert hoe ruim het functioneel verband wordt uitgelegd; ook bij excessen blijft 6:170 BW in beeld.",
+      "vindplaats": "HR 9 november 2007, ECLI:NL:HR:2007:BA7557, NJ 2008/473 (Vehof/Helvetia)"
+    }
+  ]
+}

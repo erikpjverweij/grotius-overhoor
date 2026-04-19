@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1e3a8a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Grotius">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Grotius Overhoor</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Kaarten als JS-variabele (werkt ook vanaf file:// waar fetch() faalt) -->
+<script src="cards.js" onerror="window.__cardsJsMissing=true"></script>
+<style>
+  html, body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-top { padding-top: env(safe-area-inset-top); }
+  .chip { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; }
+  .card-fade { animation: fadeIn 0.25s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .btn-primary { transition: transform 0.05s ease, background-color 0.15s ease; }
+  .btn-primary:active { transform: scale(0.98); }
+  blockquote { border-left: 3px solid #94a3b8; padding-left: 12px; color: #475569; font-style: italic; }
+  .hide { display: none !important; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+
+<!-- HOOFDSCHERM -->
+<div id="home" class="max-w-2xl mx-auto px-4 py-6 safe-top safe-bottom">
+  <header class="mb-6">
+    <h1 class="text-3xl font-bold text-slate-900">Grotius Overhoor</h1>
+    <p class="text-sm text-slate-500 mt-1">Onrechtmatige daad &amp; Aansprakelijkheid · 2026</p>
+  </header>
+
+  <!-- Voortgangstegel -->
+  <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <div class="text-3xl font-bold text-slate-900" id="stat-total">0</div>
+        <div class="text-xs uppercase tracking-wide text-slate-500">Kaarten in set</div>
+      </div>
+      <div class="text-right">
+        <div class="text-sm"><span class="text-emerald-600 font-semibold" id="stat-known">0</span> <span class="text-slate-500">ken ik</span></div>
+        <div class="text-sm"><span class="text-amber-600 font-semibold" id="stat-repeat">0</span> <span class="text-slate-500">herhalen</span></div>
+        <div class="text-sm"><span class="text-slate-600 font-semibold" id="stat-new">0</span> <span class="text-slate-500">nieuw</span></div>
+      </div>
+    </div>
+    <div class="w-full h-2 bg-slate-100 rounded-full mt-4 overflow-hidden">
+      <div id="stat-bar" class="h-full bg-emerald-500 transition-all" style="width: 0%"></div>
+    </div>
+  </section>
+
+  <!-- Filters -->
+  <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-4">
+    <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Filter</h2>
+
+    <label class="block mb-3">
+      <span class="text-xs text-slate-600">Module / dagdeel</span>
+      <select id="filter-module" class="mt-1 block w-full rounded-lg border-slate-300 border px-3 py-2 text-sm bg-white">
+        <option value="">Alle modules</option>
+      </select>
+    </label>
+
+    <label class="block mb-3">
+      <span class="text-xs text-slate-600">Type</span>
+      <select id="filter-type" class="mt-1 block w-full rounded-lg border-slate-300 border px-3 py-2 text-sm bg-white">
+        <option value="">Alle types</option>
+        <option value="leerstuk">Leerstukken</option>
+        <option value="arrest">Arresten</option>
+        <option value="artikel">Wetsartikelen</option>
+        <option value="term">Termen</option>
+      </select>
+    </label>
+
+    <label class="block mb-3">
+      <span class="text-xs text-slate-600">Selectie</span>
+      <select id="filter-status" class="mt-1 block w-full rounded-lg border-slate-300 border px-3 py-2 text-sm bg-white">
+        <option value="all">Alle kaarten</option>
+        <option value="new">Alleen nieuw (nog niet beoordeeld)</option>
+        <option value="repeat">Alleen 'herhalen'</option>
+        <option value="not-known">Nieuw + herhalen (default voor studie)</option>
+        <option value="known">Alleen 'ken ik' (controletest)</option>
+      </select>
+    </label>
+
+    <div class="flex items-center gap-4 mt-3">
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" id="opt-shuffle" checked class="h-4 w-4 rounded border-slate-300">
+        <span class="text-sm text-slate-700">Shuffle</span>
+      </label>
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" id="opt-weak-first" class="h-4 w-4 rounded border-slate-300">
+        <span class="text-sm text-slate-700">Zwakke kaarten eerst (3×)</span>
+      </label>
+    </div>
+
+    <div id="filter-count" class="mt-4 text-sm text-slate-500">— kaarten in selectie</div>
+  </section>
+
+  <!-- Start-knop -->
+  <button id="start-btn"
+    class="btn-primary w-full bg-blue-900 text-white font-semibold text-base py-4 rounded-2xl shadow-md hover:bg-blue-800 active:bg-blue-950 disabled:opacity-50 disabled:cursor-not-allowed">
+    Start overhoor
+  </button>
+
+  <!-- Voortgang per module -->
+  <section class="mt-6">
+    <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-2">Per module</h2>
+    <div id="module-progress" class="space-y-2"></div>
+  </section>
+
+  <!-- Instellingen -->
+  <section class="mt-8 text-center">
+    <button id="reset-btn" class="text-xs text-slate-400 hover:text-red-600 underline">Voortgang wissen</button>
+    <div class="text-xs text-slate-400 mt-3" id="meta-info">—</div>
+  </section>
+</div>
+
+<!-- KAARTSCHERM -->
+<div id="card-view" class="hide max-w-2xl mx-auto px-4 py-4 safe-top safe-bottom">
+  <header class="flex items-center justify-between mb-4">
+    <button id="back-btn" class="text-sm text-slate-600 hover:text-slate-900 flex items-center gap-1">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      Hoofdmenu
+    </button>
+    <div class="text-sm text-slate-500" id="card-progress">—</div>
+  </header>
+
+  <div class="w-full h-1 bg-slate-100 rounded-full mb-4 overflow-hidden">
+    <div id="card-progress-bar" class="h-full bg-blue-900 transition-all" style="width: 0%"></div>
+  </div>
+
+  <div id="card-container" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 card-fade">
+    <div class="flex flex-wrap items-center gap-2 mb-4">
+      <span class="chip bg-blue-50 text-blue-900" id="chip-module">Module —</span>
+      <span class="chip bg-slate-100 text-slate-700" id="chip-type">type</span>
+      <span class="chip bg-amber-50 text-amber-800 hide" id="chip-status">herhalen</span>
+    </div>
+
+    <p class="text-xs text-slate-500" id="card-date">—</p>
+
+    <h2 class="text-xl font-semibold text-slate-900 mt-2 leading-snug" id="card-question">Vraag laden…</h2>
+
+    <div id="answer-section" class="hide mt-5 space-y-4">
+      <div>
+        <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-1">Antwoord</div>
+        <p class="text-slate-800" id="card-answer">—</p>
+      </div>
+      <div id="citaat-block">
+        <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-1">Citaat uit syllabus</div>
+        <blockquote id="card-citaat">—</blockquote>
+        <p class="text-xs text-slate-400 mt-1" id="card-bron">—</p>
+      </div>
+      <div id="context-block">
+        <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-1">Context</div>
+        <p class="text-sm text-slate-700" id="card-context">—</p>
+      </div>
+      <div id="vindplaats-block">
+        <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-1">Vindplaats</div>
+        <p class="text-sm text-slate-700 font-mono" id="card-vindplaats">—</p>
+      </div>
+    </div>
+
+    <!-- Reveal-knop -->
+    <button id="reveal-btn"
+      class="btn-primary mt-6 w-full bg-blue-900 text-white font-semibold py-3.5 rounded-xl hover:bg-blue-800 active:bg-blue-950">
+      Antwoord weergeven
+    </button>
+
+    <!-- Beoordelingsknoppen (na reveal) -->
+    <div id="rating-buttons" class="hide mt-6 grid grid-cols-2 gap-3">
+      <button id="repeat-btn" class="btn-primary bg-amber-100 text-amber-900 font-semibold py-3 rounded-xl hover:bg-amber-200 active:bg-amber-300">
+        Herhalen
+      </button>
+      <button id="known-btn" class="btn-primary bg-emerald-100 text-emerald-900 font-semibold py-3 rounded-xl hover:bg-emerald-200 active:bg-emerald-300">
+        Ken ik
+      </button>
+    </div>
+    <button id="skip-btn" class="hide mt-3 w-full text-sm text-slate-500 hover:text-slate-900">
+      Overslaan zonder beoordelen →
+    </button>
+  </div>
+</div>
+
+<!-- EINDSCHERM -->
+<div id="end-view" class="hide max-w-2xl mx-auto px-4 py-12 safe-top safe-bottom text-center">
+  <div class="text-6xl mb-4">&#127881;</div>
+  <h2 class="text-2xl font-bold mb-2">Sessie klaar</h2>
+  <p class="text-slate-600 mb-6" id="end-summary">—</p>
+  <button id="end-back-btn" class="btn-primary w-full bg-blue-900 text-white font-semibold py-3.5 rounded-xl hover:bg-blue-800">
+    Terug naar hoofdmenu
+  </button>
+</div>
+
+<script>
+/* =========================================================================
+   Grotius Overhoor-app — client-side logica
+   ========================================================================= */
+
+const STORAGE_KEY = 'grotius-overhoor-v1';
+
+const state = {
+  cards: [],           // alle kaarten uit cards.json
+  meta: null,          // metadata (generated_at, version, etc.)
+  progress: {},        // { cardId: { status: 'known'|'repeat'|null, lastSeen: isoDate } }
+  session: {
+    queue: [],         // kaarten in huidige sessie
+    index: 0,
+    seen: 0,
+    kenCount: 0,
+    herhaalCount: 0,
+    options: null,
+  },
+};
+
+/* ---------- storage ---------- */
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) state.progress = JSON.parse(raw);
+  } catch (e) { state.progress = {}; }
+}
+function saveProgress() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.progress));
+}
+function setCardStatus(cardId, status) {
+  state.progress[cardId] = { status, lastSeen: new Date().toISOString() };
+  saveProgress();
+}
+function getCardStatus(cardId) {
+  return state.progress[cardId]?.status ?? null;
+}
+
+/* ---------- data laden ---------- */
+async function loadCards() {
+  // 1) Als cards.js al geladen is (werkt vanaf file:// en http://), gebruik die.
+  if (window.CARDS_DATA && Array.isArray(window.CARDS_DATA.cards)) {
+    state.cards = window.CARDS_DATA.cards;
+    state.meta = window.CARDS_DATA.meta || {};
+    return;
+  }
+  // 2) Anders: fetch cards.json (werkt alleen via http(s)://).
+  try {
+    const resp = await fetch('cards.json?t=' + Date.now(), { cache: 'no-cache' });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    state.cards = data.cards || [];
+    state.meta = data.meta || {};
+  } catch (e) {
+    throw new Error(
+      'Kon cards niet laden. Zorg dat cards.js naast index.html staat, ' +
+      'of open de app via een webserver. (oorzaak: ' + e.message + ')'
+    );
+  }
+}
+
+/* ---------- filters / sessie opbouwen ---------- */
+function buildQueue(opts) {
+  let filtered = state.cards.slice();
+
+  if (opts.module) filtered = filtered.filter(c => c.module === opts.module);
+  if (opts.type) filtered = filtered.filter(c => c.type === opts.type);
+
+  if (opts.statusFilter === 'new') {
+    filtered = filtered.filter(c => getCardStatus(c.id) === null);
+  } else if (opts.statusFilter === 'repeat') {
+    filtered = filtered.filter(c => getCardStatus(c.id) === 'repeat');
+  } else if (opts.statusFilter === 'not-known') {
+    filtered = filtered.filter(c => getCardStatus(c.id) !== 'known');
+  } else if (opts.statusFilter === 'known') {
+    filtered = filtered.filter(c => getCardStatus(c.id) === 'known');
+  }
+
+  if (opts.weakFirst) {
+    // Herhaalkaarten 3x dupliceren, nieuwe kaarten 2x, ken-ik 1x
+    const weighted = [];
+    filtered.forEach(c => {
+      const st = getCardStatus(c.id);
+      const weight = st === 'repeat' ? 3 : st === null ? 2 : 1;
+      for (let i = 0; i < weight; i++) weighted.push(c);
+    });
+    filtered = weighted;
+  }
+
+  if (opts.shuffle) {
+    for (let i = filtered.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+    }
+  }
+
+  // Dedupeer als weakFirst dubbele referenties opleverde, maar behoud volgorde waarin de eerste voorkomt
+  if (opts.weakFirst) {
+    const seen = new Set();
+    filtered = filtered.filter(c => {
+      if (seen.has(c.id)) return false;
+      seen.add(c.id);
+      return true;
+    });
+  }
+
+  return filtered;
+}
+
+/* ---------- UI rendering ---------- */
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const maanden = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+  return `${d.getDate()} ${maanden[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function renderStats() {
+  const total = state.cards.length;
+  let known = 0, repeat = 0, newCount = 0;
+  state.cards.forEach(c => {
+    const st = getCardStatus(c.id);
+    if (st === 'known') known++;
+    else if (st === 'repeat') repeat++;
+    else newCount++;
+  });
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-known').textContent = known;
+  document.getElementById('stat-repeat').textContent = repeat;
+  document.getElementById('stat-new').textContent = newCount;
+  document.getElementById('stat-bar').style.width = total > 0 ? `${Math.round(100 * known / total)}%` : '0%';
+
+  if (state.meta?.generated_at) {
+    document.getElementById('meta-info').textContent =
+      `Laatst bijgewerkt: ${fmtDate(state.meta.generated_at)} · ${total} kaarten` +
+      (state.meta.version ? ` · v${state.meta.version}` : '');
+  } else {
+    document.getElementById('meta-info').textContent = `${total} kaarten`;
+  }
+}
+
+function renderModuleFilter() {
+  const modules = [...new Set(state.cards.map(c => c.module))].sort();
+  const sel = document.getElementById('filter-module');
+  modules.forEach(m => {
+    const card = state.cards.find(c => c.module === m);
+    const label = `${m} — ${card?.module_titel ?? ''}`;
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = label;
+    sel.appendChild(opt);
+  });
+}
+
+function renderModuleProgress() {
+  const container = document.getElementById('module-progress');
+  container.innerHTML = '';
+  const byModule = {};
+  state.cards.forEach(c => {
+    if (!byModule[c.module]) byModule[c.module] = { titel: c.module_titel, total: 0, known: 0, repeat: 0 };
+    byModule[c.module].total++;
+    const st = getCardStatus(c.id);
+    if (st === 'known') byModule[c.module].known++;
+    if (st === 'repeat') byModule[c.module].repeat++;
+  });
+  Object.entries(byModule).sort().forEach(([mod, info]) => {
+    const pct = info.total > 0 ? Math.round(100 * info.known / info.total) : 0;
+    const div = document.createElement('div');
+    div.className = 'bg-white rounded-xl border border-slate-200 p-3';
+    div.innerHTML = `
+      <div class="flex items-center justify-between">
+        <div class="text-sm font-medium text-slate-900 truncate">${mod} — ${info.titel ?? ''}</div>
+        <div class="text-xs text-slate-500 flex-shrink-0 ml-2">${info.known}/${info.total}</div>
+      </div>
+      <div class="w-full h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
+        <div class="h-full bg-emerald-500" style="width: ${pct}%"></div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function renderFilterCount() {
+  const opts = readFilterOptions();
+  const queue = buildQueue({ ...opts, shuffle: false, weakFirst: false });
+  const el = document.getElementById('filter-count');
+  const btn = document.getElementById('start-btn');
+  el.textContent = `${queue.length} kaart${queue.length === 1 ? '' : 'en'} in selectie`;
+  btn.disabled = queue.length === 0;
+}
+
+function readFilterOptions() {
+  return {
+    module: document.getElementById('filter-module').value || null,
+    type: document.getElementById('filter-type').value || null,
+    statusFilter: document.getElementById('filter-status').value,
+    shuffle: document.getElementById('opt-shuffle').checked,
+    weakFirst: document.getElementById('opt-weak-first').checked,
+  };
+}
+
+/* ---------- sessie ---------- */
+function startSession() {
+  const opts = readFilterOptions();
+  const queue = buildQueue(opts);
+  if (queue.length === 0) return;
+  state.session = { queue, index: 0, seen: 0, kenCount: 0, herhaalCount: 0, options: opts };
+  document.getElementById('home').classList.add('hide');
+  document.getElementById('end-view').classList.add('hide');
+  document.getElementById('card-view').classList.remove('hide');
+  window.scrollTo(0, 0);
+  renderCurrentCard();
+}
+
+function renderCurrentCard() {
+  const s = state.session;
+  if (s.index >= s.queue.length) return endSession();
+  const card = s.queue[s.index];
+
+  document.getElementById('card-progress').textContent = `Kaart ${s.index + 1} van ${s.queue.length}`;
+  document.getElementById('card-progress-bar').style.width = `${100 * s.index / s.queue.length}%`;
+
+  document.getElementById('chip-module').textContent = `Module ${card.module} — ${card.module_titel ?? ''}`;
+  document.getElementById('chip-type').textContent = card.type;
+  document.getElementById('card-date').textContent = card.lesdag_datum ? `Dagdeel: ${fmtDate(card.lesdag_datum)}` : '';
+  document.getElementById('card-question').textContent = card.vraag;
+
+  // Vorige status chip
+  const prev = getCardStatus(card.id);
+  const statusChip = document.getElementById('chip-status');
+  if (prev === 'repeat') {
+    statusChip.textContent = 'eerder: herhalen';
+    statusChip.classList.remove('hide', 'bg-emerald-50', 'text-emerald-800');
+    statusChip.classList.add('bg-amber-50', 'text-amber-800');
+  } else if (prev === 'known') {
+    statusChip.textContent = 'eerder: ken ik';
+    statusChip.classList.remove('hide', 'bg-amber-50', 'text-amber-800');
+    statusChip.classList.add('bg-emerald-50', 'text-emerald-800');
+  } else {
+    statusChip.classList.add('hide');
+  }
+
+  // Antwoord verbergen
+  document.getElementById('answer-section').classList.add('hide');
+  document.getElementById('reveal-btn').classList.remove('hide');
+  document.getElementById('rating-buttons').classList.add('hide');
+  document.getElementById('skip-btn').classList.add('hide');
+
+  // Vul antwoord-velden (maar nog verborgen)
+  document.getElementById('card-answer').textContent = card.antwoord || '—';
+
+  if (card.citaat) {
+    document.getElementById('citaat-block').classList.remove('hide');
+    document.getElementById('card-citaat').textContent = `"${card.citaat}"`;
+    document.getElementById('card-bron').textContent = card.bron ? `— ${card.bron}` : '';
+  } else {
+    document.getElementById('citaat-block').classList.add('hide');
+  }
+
+  if (card.context) {
+    document.getElementById('context-block').classList.remove('hide');
+    document.getElementById('card-context').textContent = card.context;
+  } else {
+    document.getElementById('context-block').classList.add('hide');
+  }
+
+  if (card.vindplaats) {
+    document.getElementById('vindplaats-block').classList.remove('hide');
+    document.getElementById('card-vindplaats').textContent = card.vindplaats;
+  } else {
+    document.getElementById('vindplaats-block').classList.add('hide');
+  }
+
+  // Fade-animatie
+  const container = document.getElementById('card-container');
+  container.classList.remove('card-fade');
+  void container.offsetWidth;
+  container.classList.add('card-fade');
+}
+
+function revealAnswer() {
+  document.getElementById('answer-section').classList.remove('hide');
+  document.getElementById('reveal-btn').classList.add('hide');
+  document.getElementById('rating-buttons').classList.remove('hide');
+  document.getElementById('skip-btn').classList.remove('hide');
+}
+
+function rateCard(status) {
+  const card = state.session.queue[state.session.index];
+  setCardStatus(card.id, status);
+  state.session.seen++;
+  if (status === 'known') state.session.kenCount++;
+  else if (status === 'repeat') state.session.herhaalCount++;
+  nextCard();
+}
+
+function skipCard() {
+  nextCard();
+}
+
+function nextCard() {
+  state.session.index++;
+  if (state.session.index >= state.session.queue.length) return endSession();
+  renderCurrentCard();
+  window.scrollTo(0, 0);
+}
+
+function endSession() {
+  document.getElementById('card-view').classList.add('hide');
+  document.getElementById('end-view').classList.remove('hide');
+  const s = state.session;
+  document.getElementById('end-summary').textContent =
+    `Je hebt ${s.seen} van ${s.queue.length} kaarten beoordeeld. ${s.kenCount} ken je, ${s.herhaalCount} moet je herhalen.`;
+}
+
+function backToHome() {
+  document.getElementById('card-view').classList.add('hide');
+  document.getElementById('end-view').classList.add('hide');
+  document.getElementById('home').classList.remove('hide');
+  renderStats();
+  renderModuleProgress();
+  renderFilterCount();
+  window.scrollTo(0, 0);
+}
+
+function resetProgress() {
+  if (!confirm('Weet je zeker dat je alle voortgang wilt wissen?')) return;
+  state.progress = {};
+  saveProgress();
+  renderStats();
+  renderModuleProgress();
+  renderFilterCount();
+}
+
+/* ---------- init ---------- */
+async function init() {
+  loadProgress();
+  try {
+    await loadCards();
+  } catch (e) {
+    document.getElementById('home').innerHTML = `
+      <div class="bg-white rounded-2xl p-8 text-center border border-slate-200">
+        <h1 class="text-xl font-bold text-slate-900 mb-2">Kaarten laden mislukt</h1>
+        <p class="text-sm text-slate-600">Zorg dat <code>cards.json</code> naast <code>index.html</code> staat.</p>
+        <p class="text-xs text-slate-400 mt-4">${e.message}</p>
+      </div>`;
+    return;
+  }
+  renderStats();
+  renderModuleFilter();
+  renderModuleProgress();
+  renderFilterCount();
+
+  document.getElementById('start-btn').addEventListener('click', startSession);
+  document.getElementById('reveal-btn').addEventListener('click', revealAnswer);
+  document.getElementById('known-btn').addEventListener('click', () => rateCard('known'));
+  document.getElementById('repeat-btn').addEventListener('click', () => rateCard('repeat'));
+  document.getElementById('skip-btn').addEventListener('click', skipCard);
+  document.getElementById('back-btn').addEventListener('click', backToHome);
+  document.getElementById('end-back-btn').addEventListener('click', backToHome);
+  document.getElementById('reset-btn').addEventListener('click', resetProgress);
+
+  ['filter-module', 'filter-type', 'filter-status'].forEach(id => {
+    document.getElementById(id).addEventListener('change', renderFilterCount);
+  });
+
+  // Service worker registreren (alleen als hij bestaat)
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => { /* stil falen in dev */ });
+    });
+  }
+}
+
+init();
+</script>
+</body>
+</html>
