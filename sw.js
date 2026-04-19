@@ -7,7 +7,7 @@
  *     offline maar zie je wel direct nieuwe kaarten zodra je weer bereik hebt.
  */
 
-const CACHE_NAME = 'grotius-overhoor-v1';
+const CACHE_NAME = 'grotius-overhoor-v2';
 const STATIC_ASSETS = [
   './',
   './index.html',

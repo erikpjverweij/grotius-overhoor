@@ -3,71 +3,600 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#1e3a8a">
+<meta name="theme-color" content="#0a0a0c">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Grotius">
+<meta name="color-scheme" content="dark">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Grotius Overhoor</title>
-<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
 <!-- Kaarten als JS-variabele (werkt ook vanaf file:// waar fetch() faalt) -->
 <script src="cards.js" onerror="window.__cardsJsMissing=true"></script>
+
 <style>
+  /* ========================================================================
+     Grotius Overhoor — Dark theme
+     ======================================================================== */
+  :root {
+    --bg:           #0a0a0c;
+    --bg-elevated: #111114;
+    --surface:      #16161b;
+    --surface-hi:   #1c1c22;
+    --border:       #26262e;
+    --border-hi:    #34343e;
+
+    --text:         #f3f3f7;
+    --text-2:       #a8a8b3;
+    --text-3:       #6c6c78;
+    --text-4:       #45454f;
+
+    --accent:       #d4b878;          /* warm goud */
+    --accent-soft:  rgba(212,184,120,0.10);
+    --accent-line:  rgba(212,184,120,0.25);
+
+    --success:      #4ade80;
+    --success-bg:   rgba(74,222,128,0.08);
+    --warn:         #fbbf24;
+    --warn-bg:      rgba(251,191,36,0.08);
+    --info-bg:      rgba(168,168,179,0.06);
+
+    --radius-sm: 10px;
+    --radius:    14px;
+    --radius-lg: 20px;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
   html, body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
-  .safe-top { padding-top: env(safe-area-inset-top); }
-  .chip { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; }
-  .card-fade { animation: fadeIn 0.25s ease-out; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-  .btn-primary { transition: transform 0.05s ease, background-color 0.15s ease; }
-  .btn-primary:active { transform: scale(0.98); }
-  blockquote { border-left: 3px solid #94a3b8; padding-left: 12px; color: #475569; font-style: italic; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100vh;
+  }
+
+  /* Subtiel verloop voor diepte */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(212,184,120,0.04), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 20px;
+    padding-top: max(24px, env(safe-area-inset-top));
+    padding-bottom: max(48px, env(safe-area-inset-bottom));
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Typografie */
+  .display-serif {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  h1.app-title {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 38px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    margin: 0 0 4px;
+    color: var(--text);
+  }
+  h1.app-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .app-subtitle {
+    font-size: 13px;
+    color: var(--text-3);
+    margin: 0;
+    letter-spacing: 0.02em;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin: 0 0 12px;
+  }
+
+  /* Card — surface */
+  .surface {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+
+  /* Hero stats */
+  .stat-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .stat-hero .big {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 56px;
+    line-height: 1;
+    color: var(--text);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+  .stat-hero .big-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-3);
+    margin-top: 6px;
+  }
+  .stat-hero .right { text-align: right; font-size: 13px; line-height: 1.7; }
+  .stat-hero .right .pill {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-weight: 500;
+    font-size: 12px;
+    margin-left: 4px;
+  }
+  .pill-known  { color: var(--success); background: var(--success-bg); }
+  .pill-repeat { color: var(--warn);    background: var(--warn-bg); }
+  .pill-new    { color: var(--text-2);  background: var(--info-bg); }
+
+  .progress-track {
+    width: 100%;
+    height: 3px;
+    background: var(--border);
+    border-radius: 999px;
+    margin-top: 18px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #efd9a6);
+    border-radius: 999px;
+    transition: width 0.4s cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+
+  /* Form controls */
+  label.field { display: block; margin-bottom: 14px; }
+  label.field:last-child { margin-bottom: 0; }
+  label.field > .label-text {
+    display: block;
+    font-size: 11px;
+    color: var(--text-3);
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+  }
+
+  select, .select {
+    width: 100%;
+    background: var(--bg-elevated);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 11px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'><path d='M1 1.5L6 6.5L11 1.5' stroke='%236c6c78' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 38px;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  select:hover { border-color: var(--border-hi); }
+  select:focus { outline: none; border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  .toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 4px;
+  }
+  .toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-2);
+    user-select: none;
+  }
+  .toggle input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border: 1.5px solid var(--border-hi);
+    border-radius: 4px;
+    background: var(--bg-elevated);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s ease;
+  }
+  .toggle input[type="checkbox"]:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .toggle input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px; top: 1px;
+    width: 5px; height: 9px;
+    border: solid var(--bg);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  .toggle:hover { color: var(--text); }
+
+  .filter-count {
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--text-3);
+    letter-spacing: 0.02em;
+  }
+
+  /* Buttons */
+  button {
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s ease;
+  }
+  button:active { transform: scale(0.985); }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: #1a1408;
+    padding: 16px 20px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    box-shadow: 0 8px 24px -10px rgba(212,184,120,0.6), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  .btn-primary:hover { background: #e0c890; }
+  .btn-primary:disabled {
+    background: var(--surface);
+    color: var(--text-4);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  .btn-success {
+    background: var(--success-bg);
+    color: var(--success);
+    padding: 14px;
+    border: 1px solid rgba(74,222,128,0.20);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+  }
+  .btn-success:hover { background: rgba(74,222,128,0.14); border-color: rgba(74,222,128,0.30); }
+
+  .btn-warn {
+    background: var(--warn-bg);
+    color: var(--warn);
+    padding: 14px;
+    border: 1px solid rgba(251,191,36,0.20);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+  }
+  .btn-warn:hover { background: rgba(251,191,36,0.14); border-color: rgba(251,191,36,0.30); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-3);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-ghost:hover { color: var(--text); background: var(--surface); }
+
+  .btn-link {
+    background: transparent;
+    color: var(--text-3);
+    font-size: 12px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 4px 8px;
+  }
+  .btn-link:hover { color: var(--warn); }
+
+  /* Module-progress lijst */
+  .module-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .module-row .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .module-row .name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .module-row .count {
+    font-size: 11px;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .module-row .track {
+    height: 2px;
+    background: var(--border);
+    border-radius: 999px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .module-row .track .bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+  }
+
+  /* === Card view === */
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .card-progress-track {
+    height: 2px;
+    background: var(--border);
+    border-radius: 999px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .card-progress-bar {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.3s ease;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .chip-module { color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent-line); }
+  .chip-type   { color: var(--text-2); background: var(--surface-hi); border: 1px solid var(--border); text-transform: capitalize; }
+  .chip-status-known { color: var(--success); background: var(--success-bg); border: 1px solid rgba(74,222,128,0.20); }
+  .chip-status-repeat { color: var(--warn); background: var(--warn-bg); border: 1px solid rgba(251,191,36,0.20); }
+
+  .card-date {
+    font-size: 11px;
+    color: var(--text-3);
+    margin: 0 0 10px;
+    letter-spacing: 0.04em;
+  }
+
+  .card-question {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 26px;
+    line-height: 1.3;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    margin: 0 0 8px;
+  }
+
+  .answer-section {
+    margin-top: 28px;
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .answer-block { margin-bottom: 22px; }
+  .answer-block:last-child { margin-bottom: 0; }
+  .answer-label {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+  .answer-text {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.6;
+    margin: 0;
+  }
+  .answer-context {
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  blockquote.citaat {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--text);
+    border-left: 2px solid var(--accent);
+    padding: 4px 0 4px 16px;
+    margin: 0;
+  }
+  .bron {
+    font-size: 11px;
+    color: var(--text-3);
+    margin: 6px 0 0;
+    letter-spacing: 0.02em;
+  }
+
+  .vindplaats {
+    font-family: 'JetBrains Mono', ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    color: var(--text-2);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    word-break: break-word;
+  }
+
+  .reveal-spacer { margin-top: 28px; }
+
+  .rating-grid {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .skip-btn {
+    display: block;
+    width: 100%;
+    background: transparent;
+    color: var(--text-3);
+    margin-top: 12px;
+    padding: 10px;
+    font-size: 13px;
+  }
+  .skip-btn:hover { color: var(--text); }
+
+  /* End view */
+  .end-celebration {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .end-emoji {
+    font-size: 56px;
+    margin-bottom: 16px;
+    opacity: 0.9;
+  }
+  .end-title {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 32px;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  .end-summary {
+    color: var(--text-2);
+    margin: 0 0 32px;
+    font-size: 14px;
+  }
+
+  .footer-meta {
+    text-align: center;
+    margin-top: 36px;
+    font-size: 11px;
+    color: var(--text-4);
+    letter-spacing: 0.04em;
+  }
+
   .hide { display: none !important; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .card-fade { animation: fadeIn 0.25s ease-out; }
+
+  /* Toegankelijkheid: focus rings */
+  button:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
 </style>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen">
+<body>
 
-<!-- HOOFDSCHERM -->
-<div id="home" class="max-w-2xl mx-auto px-4 py-6 safe-top safe-bottom">
-  <header class="mb-6">
-    <h1 class="text-3xl font-bold text-slate-900">Grotius Overhoor</h1>
-    <p class="text-sm text-slate-500 mt-1">Onrechtmatige daad &amp; Aansprakelijkheid · 2026</p>
+<!-- ===================== HOOFDSCHERM ===================== -->
+<main id="home" class="container">
+  <header style="margin-bottom: 28px;">
+    <h1 class="app-title">Grotius <em>Overhoor</em></h1>
+    <p class="app-subtitle">Onrechtmatige daad &amp; Aansprakelijkheid · 2026</p>
   </header>
 
   <!-- Voortgangstegel -->
-  <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-4">
-    <div class="flex items-center justify-between">
+  <section class="surface" style="padding: 24px;">
+    <div class="stat-hero">
       <div>
-        <div class="text-3xl font-bold text-slate-900" id="stat-total">0</div>
-        <div class="text-xs uppercase tracking-wide text-slate-500">Kaarten in set</div>
+        <div class="big" id="stat-total">—</div>
+        <div class="big-label">Kaarten in set</div>
       </div>
-      <div class="text-right">
-        <div class="text-sm"><span class="text-emerald-600 font-semibold" id="stat-known">0</span> <span class="text-slate-500">ken ik</span></div>
-        <div class="text-sm"><span class="text-amber-600 font-semibold" id="stat-repeat">0</span> <span class="text-slate-500">herhalen</span></div>
-        <div class="text-sm"><span class="text-slate-600 font-semibold" id="stat-new">0</span> <span class="text-slate-500">nieuw</span></div>
+      <div class="right">
+        <div><span id="stat-known">0</span><span class="pill pill-known">ken ik</span></div>
+        <div><span id="stat-repeat">0</span><span class="pill pill-repeat">herhalen</span></div>
+        <div><span id="stat-new">0</span><span class="pill pill-new">nieuw</span></div>
       </div>
     </div>
-    <div class="w-full h-2 bg-slate-100 rounded-full mt-4 overflow-hidden">
-      <div id="stat-bar" class="h-full bg-emerald-500 transition-all" style="width: 0%"></div>
+    <div class="progress-track">
+      <div id="stat-bar" class="progress-bar" style="width: 0%"></div>
     </div>
   </section>
 
   <!-- Filters -->
-  <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-4">
-    <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Filter</h2>
+  <section class="surface">
+    <p class="section-label">Filter</p>
 
-    <label class="block mb-3">
-      <span class="text-xs text-slate-600">Module / dagdeel</span>
-      <select id="filter-module" class="mt-1 block w-full rounded-lg border-slate-300 border px-3 py-2 text-sm bg-white">
+    <label class="field">
+      <span class="label-text">Module / dagdeel</span>
+      <select id="filter-module">
         <option value="">Alle modules</option>
       </select>
     </label>
 
-    <label class="block mb-3">
-      <span class="text-xs text-slate-600">Type</span>
-      <select id="filter-type" class="mt-1 block w-full rounded-lg border-slate-300 border px-3 py-2 text-sm bg-white">
+    <label class="field">
+      <span class="label-text">Type</span>
+      <select id="filter-type">
         <option value="">Alle types</option>
         <option value="leerstuk">Leerstukken</option>
         <option value="arrest">Arresten</option>
@@ -76,9 +605,9 @@
       </select>
     </label>
 
-    <label class="block mb-3">
-      <span class="text-xs text-slate-600">Selectie</span>
-      <select id="filter-status" class="mt-1 block w-full rounded-lg border-slate-300 border px-3 py-2 text-sm bg-white">
+    <label class="field">
+      <span class="label-text">Selectie</span>
+      <select id="filter-status">
         <option value="all">Alle kaarten</option>
         <option value="new">Alleen nieuw (nog niet beoordeeld)</option>
         <option value="repeat">Alleen 'herhalen'</option>
@@ -87,133 +616,118 @@
       </select>
     </label>
 
-    <div class="flex items-center gap-4 mt-3">
-      <label class="flex items-center gap-2 cursor-pointer">
-        <input type="checkbox" id="opt-shuffle" checked class="h-4 w-4 rounded border-slate-300">
-        <span class="text-sm text-slate-700">Shuffle</span>
+    <div class="toggles">
+      <label class="toggle">
+        <input type="checkbox" id="opt-shuffle" checked>
+        <span>Shuffle</span>
       </label>
-      <label class="flex items-center gap-2 cursor-pointer">
-        <input type="checkbox" id="opt-weak-first" class="h-4 w-4 rounded border-slate-300">
-        <span class="text-sm text-slate-700">Zwakke kaarten eerst (3×)</span>
+      <label class="toggle">
+        <input type="checkbox" id="opt-weak-first">
+        <span>Zwakke kaarten eerst</span>
       </label>
     </div>
 
-    <div id="filter-count" class="mt-4 text-sm text-slate-500">— kaarten in selectie</div>
+    <div id="filter-count" class="filter-count">— kaarten in selectie</div>
   </section>
 
   <!-- Start-knop -->
-  <button id="start-btn"
-    class="btn-primary w-full bg-blue-900 text-white font-semibold text-base py-4 rounded-2xl shadow-md hover:bg-blue-800 active:bg-blue-950 disabled:opacity-50 disabled:cursor-not-allowed">
+  <button id="start-btn" class="btn-primary" style="margin-top: 6px;">
     Start overhoor
   </button>
 
   <!-- Voortgang per module -->
-  <section class="mt-6">
-    <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-2">Per module</h2>
-    <div id="module-progress" class="space-y-2"></div>
+  <section style="margin-top: 32px;">
+    <p class="section-label">Per module</p>
+    <div id="module-progress"></div>
   </section>
 
-  <!-- Instellingen -->
-  <section class="mt-8 text-center">
-    <button id="reset-btn" class="text-xs text-slate-400 hover:text-red-600 underline">Voortgang wissen</button>
-    <div class="text-xs text-slate-400 mt-3" id="meta-info">—</div>
-  </section>
-</div>
+  <div class="footer-meta">
+    <button id="reset-btn" class="btn-link">Voortgang wissen</button>
+    <div id="meta-info" style="margin-top: 10px;">—</div>
+  </div>
+</main>
 
-<!-- KAARTSCHERM -->
-<div id="card-view" class="hide max-w-2xl mx-auto px-4 py-4 safe-top safe-bottom">
-  <header class="flex items-center justify-between mb-4">
-    <button id="back-btn" class="text-sm text-slate-600 hover:text-slate-900 flex items-center gap-1">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+<!-- ===================== KAARTSCHERM ===================== -->
+<main id="card-view" class="container hide">
+  <div class="card-header">
+    <button id="back-btn" class="btn-ghost">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
       Hoofdmenu
     </button>
-    <div class="text-sm text-slate-500" id="card-progress">—</div>
-  </header>
-
-  <div class="w-full h-1 bg-slate-100 rounded-full mb-4 overflow-hidden">
-    <div id="card-progress-bar" class="h-full bg-blue-900 transition-all" style="width: 0%"></div>
+    <span style="font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums;" id="card-progress">—</span>
   </div>
 
-  <div id="card-container" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 card-fade">
-    <div class="flex flex-wrap items-center gap-2 mb-4">
-      <span class="chip bg-blue-50 text-blue-900" id="chip-module">Module —</span>
-      <span class="chip bg-slate-100 text-slate-700" id="chip-type">type</span>
-      <span class="chip bg-amber-50 text-amber-800 hide" id="chip-status">herhalen</span>
-    </div>
-
-    <p class="text-xs text-slate-500" id="card-date">—</p>
-
-    <h2 class="text-xl font-semibold text-slate-900 mt-2 leading-snug" id="card-question">Vraag laden…</h2>
-
-    <div id="answer-section" class="hide mt-5 space-y-4">
-      <div>
-        <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-1">Antwoord</div>
-        <p class="text-slate-800" id="card-answer">—</p>
-      </div>
-      <div id="citaat-block">
-        <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-1">Citaat uit syllabus</div>
-        <blockquote id="card-citaat">—</blockquote>
-        <p class="text-xs text-slate-400 mt-1" id="card-bron">—</p>
-      </div>
-      <div id="context-block">
-        <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-1">Context</div>
-        <p class="text-sm text-slate-700" id="card-context">—</p>
-      </div>
-      <div id="vindplaats-block">
-        <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-1">Vindplaats</div>
-        <p class="text-sm text-slate-700 font-mono" id="card-vindplaats">—</p>
-      </div>
-    </div>
-
-    <!-- Reveal-knop -->
-    <button id="reveal-btn"
-      class="btn-primary mt-6 w-full bg-blue-900 text-white font-semibold py-3.5 rounded-xl hover:bg-blue-800 active:bg-blue-950">
-      Antwoord weergeven
-    </button>
-
-    <!-- Beoordelingsknoppen (na reveal) -->
-    <div id="rating-buttons" class="hide mt-6 grid grid-cols-2 gap-3">
-      <button id="repeat-btn" class="btn-primary bg-amber-100 text-amber-900 font-semibold py-3 rounded-xl hover:bg-amber-200 active:bg-amber-300">
-        Herhalen
-      </button>
-      <button id="known-btn" class="btn-primary bg-emerald-100 text-emerald-900 font-semibold py-3 rounded-xl hover:bg-emerald-200 active:bg-emerald-300">
-        Ken ik
-      </button>
-    </div>
-    <button id="skip-btn" class="hide mt-3 w-full text-sm text-slate-500 hover:text-slate-900">
-      Overslaan zonder beoordelen →
-    </button>
+  <div class="card-progress-track">
+    <div id="card-progress-bar" class="card-progress-bar" style="width: 0%"></div>
   </div>
-</div>
 
-<!-- EINDSCHERM -->
-<div id="end-view" class="hide max-w-2xl mx-auto px-4 py-12 safe-top safe-bottom text-center">
-  <div class="text-6xl mb-4">&#127881;</div>
-  <h2 class="text-2xl font-bold mb-2">Sessie klaar</h2>
-  <p class="text-slate-600 mb-6" id="end-summary">—</p>
-  <button id="end-back-btn" class="btn-primary w-full bg-blue-900 text-white font-semibold py-3.5 rounded-xl hover:bg-blue-800">
-    Terug naar hoofdmenu
-  </button>
-</div>
+  <article id="card-container" class="surface card-fade" style="padding: 24px;">
+    <div class="chips">
+      <span class="chip chip-module" id="chip-module">Module —</span>
+      <span class="chip chip-type" id="chip-type">type</span>
+      <span class="chip chip-status-repeat hide" id="chip-status">herhalen</span>
+    </div>
+
+    <p class="card-date" id="card-date">—</p>
+
+    <h2 class="card-question" id="card-question">Vraag laden…</h2>
+
+    <div id="answer-section" class="answer-section hide">
+      <div class="answer-block">
+        <p class="answer-label">Antwoord</p>
+        <p class="answer-text" id="card-answer">—</p>
+      </div>
+      <div class="answer-block" id="citaat-block">
+        <p class="answer-label">Citaat uit syllabus</p>
+        <blockquote class="citaat" id="card-citaat">—</blockquote>
+        <p class="bron" id="card-bron">—</p>
+      </div>
+      <div class="answer-block" id="context-block">
+        <p class="answer-label">Context</p>
+        <p class="answer-context" id="card-context">—</p>
+      </div>
+      <div class="answer-block" id="vindplaats-block">
+        <p class="answer-label">Vindplaats</p>
+        <p class="vindplaats" id="card-vindplaats">—</p>
+      </div>
+    </div>
+
+    <div class="reveal-spacer">
+      <button id="reveal-btn" class="btn-primary">Antwoord weergeven</button>
+
+      <div id="rating-buttons" class="rating-grid hide">
+        <button id="repeat-btn" class="btn-warn">Herhalen</button>
+        <button id="known-btn" class="btn-success">Ken ik</button>
+      </div>
+      <button id="skip-btn" class="skip-btn hide">Overslaan zonder beoordelen →</button>
+    </div>
+  </article>
+</main>
+
+<!-- ===================== EINDSCHERM ===================== -->
+<main id="end-view" class="container hide">
+  <div class="end-celebration">
+    <div class="end-emoji">✦</div>
+    <h2 class="end-title">Sessie afgerond</h2>
+    <p class="end-summary" id="end-summary">—</p>
+    <button id="end-back-btn" class="btn-primary">Terug naar hoofdmenu</button>
+  </div>
+</main>
 
 <script>
 /* =========================================================================
-   Grotius Overhoor-app — client-side logica
+   Grotius Overhoor — client-side logica
    ========================================================================= */
 
 const STORAGE_KEY = 'grotius-overhoor-v1';
 
 const state = {
-  cards: [],           // alle kaarten uit cards.json
-  meta: null,          // metadata (generated_at, version, etc.)
-  progress: {},        // { cardId: { status: 'known'|'repeat'|null, lastSeen: isoDate } }
+  cards: [],
+  meta: null,
+  progress: {},
   session: {
-    queue: [],         // kaarten in huidige sessie
-    index: 0,
-    seen: 0,
-    kenCount: 0,
-    herhaalCount: 0,
-    options: null,
+    queue: [], index: 0, seen: 0,
+    kenCount: 0, herhaalCount: 0, options: null,
   },
 };
 
@@ -224,26 +738,20 @@ function loadProgress() {
     if (raw) state.progress = JSON.parse(raw);
   } catch (e) { state.progress = {}; }
 }
-function saveProgress() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.progress));
-}
+function saveProgress() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.progress)); }
 function setCardStatus(cardId, status) {
   state.progress[cardId] = { status, lastSeen: new Date().toISOString() };
   saveProgress();
 }
-function getCardStatus(cardId) {
-  return state.progress[cardId]?.status ?? null;
-}
+function getCardStatus(cardId) { return state.progress[cardId]?.status ?? null; }
 
 /* ---------- data laden ---------- */
 async function loadCards() {
-  // 1) Als cards.js al geladen is (werkt vanaf file:// en http://), gebruik die.
   if (window.CARDS_DATA && Array.isArray(window.CARDS_DATA.cards)) {
     state.cards = window.CARDS_DATA.cards;
     state.meta = window.CARDS_DATA.meta || {};
     return;
   }
-  // 2) Anders: fetch cards.json (werkt alleen via http(s)://).
   try {
     const resp = await fetch('cards.json?t=' + Date.now(), { cache: 'no-cache' });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
@@ -251,32 +759,21 @@ async function loadCards() {
     state.cards = data.cards || [];
     state.meta = data.meta || {};
   } catch (e) {
-    throw new Error(
-      'Kon cards niet laden. Zorg dat cards.js naast index.html staat, ' +
-      'of open de app via een webserver. (oorzaak: ' + e.message + ')'
-    );
+    throw new Error('Kon cards niet laden. Zorg dat cards.js naast index.html staat, of open de app via een webserver. (oorzaak: ' + e.message + ')');
   }
 }
 
-/* ---------- filters / sessie opbouwen ---------- */
+/* ---------- filters / sessie ---------- */
 function buildQueue(opts) {
   let filtered = state.cards.slice();
-
   if (opts.module) filtered = filtered.filter(c => c.module === opts.module);
   if (opts.type) filtered = filtered.filter(c => c.type === opts.type);
-
-  if (opts.statusFilter === 'new') {
-    filtered = filtered.filter(c => getCardStatus(c.id) === null);
-  } else if (opts.statusFilter === 'repeat') {
-    filtered = filtered.filter(c => getCardStatus(c.id) === 'repeat');
-  } else if (opts.statusFilter === 'not-known') {
-    filtered = filtered.filter(c => getCardStatus(c.id) !== 'known');
-  } else if (opts.statusFilter === 'known') {
-    filtered = filtered.filter(c => getCardStatus(c.id) === 'known');
-  }
+  if (opts.statusFilter === 'new') filtered = filtered.filter(c => getCardStatus(c.id) === null);
+  else if (opts.statusFilter === 'repeat') filtered = filtered.filter(c => getCardStatus(c.id) === 'repeat');
+  else if (opts.statusFilter === 'not-known') filtered = filtered.filter(c => getCardStatus(c.id) !== 'known');
+  else if (opts.statusFilter === 'known') filtered = filtered.filter(c => getCardStatus(c.id) === 'known');
 
   if (opts.weakFirst) {
-    // Herhaalkaarten 3x dupliceren, nieuwe kaarten 2x, ken-ik 1x
     const weighted = [];
     filtered.forEach(c => {
       const st = getCardStatus(c.id);
@@ -285,24 +782,16 @@ function buildQueue(opts) {
     });
     filtered = weighted;
   }
-
   if (opts.shuffle) {
     for (let i = filtered.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
     }
   }
-
-  // Dedupeer als weakFirst dubbele referenties opleverde, maar behoud volgorde waarin de eerste voorkomt
   if (opts.weakFirst) {
     const seen = new Set();
-    filtered = filtered.filter(c => {
-      if (seen.has(c.id)) return false;
-      seen.add(c.id);
-      return true;
-    });
+    filtered = filtered.filter(c => { if (seen.has(c.id)) return false; seen.add(c.id); return true; });
   }
-
   return filtered;
 }
 
@@ -319,19 +808,16 @@ function renderStats() {
   let known = 0, repeat = 0, newCount = 0;
   state.cards.forEach(c => {
     const st = getCardStatus(c.id);
-    if (st === 'known') known++;
-    else if (st === 'repeat') repeat++;
-    else newCount++;
+    if (st === 'known') known++; else if (st === 'repeat') repeat++; else newCount++;
   });
   document.getElementById('stat-total').textContent = total;
   document.getElementById('stat-known').textContent = known;
   document.getElementById('stat-repeat').textContent = repeat;
   document.getElementById('stat-new').textContent = newCount;
   document.getElementById('stat-bar').style.width = total > 0 ? `${Math.round(100 * known / total)}%` : '0%';
-
   if (state.meta?.generated_at) {
     document.getElementById('meta-info').textContent =
-      `Laatst bijgewerkt: ${fmtDate(state.meta.generated_at)} · ${total} kaarten` +
+      `Bijgewerkt ${fmtDate(state.meta.generated_at)} · ${total} kaarten` +
       (state.meta.version ? ` · v${state.meta.version}` : '');
   } else {
     document.getElementById('meta-info').textContent = `${total} kaarten`;
@@ -343,10 +829,9 @@ function renderModuleFilter() {
   const sel = document.getElementById('filter-module');
   modules.forEach(m => {
     const card = state.cards.find(c => c.module === m);
-    const label = `${m} — ${card?.module_titel ?? ''}`;
     const opt = document.createElement('option');
     opt.value = m;
-    opt.textContent = label;
+    opt.textContent = `${m} — ${card?.module_titel ?? ''}`;
     sel.appendChild(opt);
   });
 }
@@ -365,15 +850,13 @@ function renderModuleProgress() {
   Object.entries(byModule).sort().forEach(([mod, info]) => {
     const pct = info.total > 0 ? Math.round(100 * info.known / info.total) : 0;
     const div = document.createElement('div');
-    div.className = 'bg-white rounded-xl border border-slate-200 p-3';
+    div.className = 'module-row';
     div.innerHTML = `
-      <div class="flex items-center justify-between">
-        <div class="text-sm font-medium text-slate-900 truncate">${mod} — ${info.titel ?? ''}</div>
-        <div class="text-xs text-slate-500 flex-shrink-0 ml-2">${info.known}/${info.total}</div>
+      <div class="row">
+        <div class="name">${mod} · ${info.titel ?? ''}</div>
+        <div class="count">${info.known}/${info.total}</div>
       </div>
-      <div class="w-full h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
-        <div class="h-full bg-emerald-500" style="width: ${pct}%"></div>
-      </div>
+      <div class="track"><div class="bar" style="width: ${pct}%"></div></div>
     `;
     container.appendChild(div);
   });
@@ -416,61 +899,47 @@ function renderCurrentCard() {
   if (s.index >= s.queue.length) return endSession();
   const card = s.queue[s.index];
 
-  document.getElementById('card-progress').textContent = `Kaart ${s.index + 1} van ${s.queue.length}`;
+  document.getElementById('card-progress').textContent = `${s.index + 1} / ${s.queue.length}`;
   document.getElementById('card-progress-bar').style.width = `${100 * s.index / s.queue.length}%`;
 
-  document.getElementById('chip-module').textContent = `Module ${card.module} — ${card.module_titel ?? ''}`;
+  document.getElementById('chip-module').textContent = `Module ${card.module} · ${card.module_titel ?? ''}`;
   document.getElementById('chip-type').textContent = card.type;
-  document.getElementById('card-date').textContent = card.lesdag_datum ? `Dagdeel: ${fmtDate(card.lesdag_datum)}` : '';
+  document.getElementById('card-date').textContent = card.lesdag_datum ? `Dagdeel · ${fmtDate(card.lesdag_datum)}` : '';
   document.getElementById('card-question').textContent = card.vraag;
 
-  // Vorige status chip
   const prev = getCardStatus(card.id);
   const statusChip = document.getElementById('chip-status');
+  statusChip.classList.remove('chip-status-known','chip-status-repeat','hide');
   if (prev === 'repeat') {
     statusChip.textContent = 'eerder: herhalen';
-    statusChip.classList.remove('hide', 'bg-emerald-50', 'text-emerald-800');
-    statusChip.classList.add('bg-amber-50', 'text-amber-800');
+    statusChip.classList.add('chip-status-repeat');
   } else if (prev === 'known') {
     statusChip.textContent = 'eerder: ken ik';
-    statusChip.classList.remove('hide', 'bg-amber-50', 'text-amber-800');
-    statusChip.classList.add('bg-emerald-50', 'text-emerald-800');
+    statusChip.classList.add('chip-status-known');
   } else {
     statusChip.classList.add('hide');
   }
 
-  // Antwoord verbergen
   document.getElementById('answer-section').classList.add('hide');
   document.getElementById('reveal-btn').classList.remove('hide');
   document.getElementById('rating-buttons').classList.add('hide');
   document.getElementById('skip-btn').classList.add('hide');
 
-  // Vul antwoord-velden (maar nog verborgen)
   document.getElementById('card-answer').textContent = card.antwoord || '—';
-
   if (card.citaat) {
     document.getElementById('citaat-block').classList.remove('hide');
     document.getElementById('card-citaat').textContent = `"${card.citaat}"`;
     document.getElementById('card-bron').textContent = card.bron ? `— ${card.bron}` : '';
-  } else {
-    document.getElementById('citaat-block').classList.add('hide');
-  }
-
+  } else { document.getElementById('citaat-block').classList.add('hide'); }
   if (card.context) {
     document.getElementById('context-block').classList.remove('hide');
     document.getElementById('card-context').textContent = card.context;
-  } else {
-    document.getElementById('context-block').classList.add('hide');
-  }
-
+  } else { document.getElementById('context-block').classList.add('hide'); }
   if (card.vindplaats) {
     document.getElementById('vindplaats-block').classList.remove('hide');
     document.getElementById('card-vindplaats').textContent = card.vindplaats;
-  } else {
-    document.getElementById('vindplaats-block').classList.add('hide');
-  }
+  } else { document.getElementById('vindplaats-block').classList.add('hide'); }
 
-  // Fade-animatie
   const container = document.getElementById('card-container');
   container.classList.remove('card-fade');
   void container.offsetWidth;
@@ -483,7 +952,6 @@ function revealAnswer() {
   document.getElementById('rating-buttons').classList.remove('hide');
   document.getElementById('skip-btn').classList.remove('hide');
 }
-
 function rateCard(status) {
   const card = state.session.queue[state.session.index];
   setCardStatus(card.id, status);
@@ -492,26 +960,20 @@ function rateCard(status) {
   else if (status === 'repeat') state.session.herhaalCount++;
   nextCard();
 }
-
-function skipCard() {
-  nextCard();
-}
-
+function skipCard() { nextCard(); }
 function nextCard() {
   state.session.index++;
   if (state.session.index >= state.session.queue.length) return endSession();
   renderCurrentCard();
   window.scrollTo(0, 0);
 }
-
 function endSession() {
   document.getElementById('card-view').classList.add('hide');
   document.getElementById('end-view').classList.remove('hide');
   const s = state.session;
   document.getElementById('end-summary').textContent =
-    `Je hebt ${s.seen} van ${s.queue.length} kaarten beoordeeld. ${s.kenCount} ken je, ${s.herhaalCount} moet je herhalen.`;
+    `${s.seen} van ${s.queue.length} kaarten beoordeeld · ${s.kenCount} ken je · ${s.herhaalCount} te herhalen`;
 }
-
 function backToHome() {
   document.getElementById('card-view').classList.add('hide');
   document.getElementById('end-view').classList.add('hide');
@@ -521,7 +983,6 @@ function backToHome() {
   renderFilterCount();
   window.scrollTo(0, 0);
 }
-
 function resetProgress() {
   if (!confirm('Weet je zeker dat je alle voortgang wilt wissen?')) return;
   state.progress = {};
@@ -534,14 +995,13 @@ function resetProgress() {
 /* ---------- init ---------- */
 async function init() {
   loadProgress();
-  try {
-    await loadCards();
-  } catch (e) {
+  try { await loadCards(); }
+  catch (e) {
     document.getElementById('home').innerHTML = `
-      <div class="bg-white rounded-2xl p-8 text-center border border-slate-200">
-        <h1 class="text-xl font-bold text-slate-900 mb-2">Kaarten laden mislukt</h1>
-        <p class="text-sm text-slate-600">Zorg dat <code>cards.json</code> naast <code>index.html</code> staat.</p>
-        <p class="text-xs text-slate-400 mt-4">${e.message}</p>
+      <div class="surface" style="padding: 32px; text-align: center;">
+        <h1 class="display-serif" style="font-size: 24px; margin: 0 0 8px;">Kaarten laden mislukt</h1>
+        <p style="color: var(--text-2); font-size: 13px; margin: 0;">Zorg dat <code>cards.js</code> naast <code>index.html</code> staat.</p>
+        <p style="color: var(--text-4); font-size: 11px; margin-top: 18px;">${e.message}</p>
       </div>`;
     return;
   }
@@ -563,7 +1023,6 @@ async function init() {
     document.getElementById(id).addEventListener('change', renderFilterCount);
   });
 
-  // Service worker registreren (alleen als hij bestaat)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').catch(() => { /* stil falen in dev */ });
