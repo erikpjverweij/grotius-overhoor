@@ -1,4 +1,4 @@
-// Auto-gegenereerd door build_cards.py — niet handmatig bewerken
+/* Auto-gegenereerd uit cards.json — NIET handmatig bewerken. */
 window.CARDS_DATA = {
   "gegenereerd": "2026-04-19",
   "totaal": 59,
@@ -139,8 +139,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Hoe beoordeelt de Hoge Raad de aansprakelijkheid van een opdrachtnemer bij bouwwerkzaamheden die schade aan het belendend perceel veroorzaken?",
       "antwoord": "De opdrachtnemer moet bij werkzaamheden die door hun aard risico op schade aan belendende percelen meebrengen (zoals het afzinken van een kelder) grote zorgvuldigheid betrachten en onderzoeken welke voorzorgsmaatregelen nodig zijn; een hoge onderzoeks- en waarschuwingsplicht geldt.",
-      "citaat": "[Afzinkkelder: verscherpte onderzoeks- en waarschuwingsplicht bij bouwwerken met risico op schade aan belendend perceel.]",
-      "context": "Toepassing van de Kelderluik-criteria in een aannemingscontext; verscherping van de zorgplicht bij bouwactiviteiten.",
+      "citaat": "Waar dit risico zich vervolgens heeft verwezenlijkt, kan niet zonder meer worden aanvaard dat [eiseressen] de daardoor veroorzaakte schade dienen te dragen. Hierbij is van belang dat de werkzaamheden in het belang van (de opdrachtgever van) Multi werden uitgevoerd en voor [eiseressen] geen voordeel opleverden, dat de schade van [eiseressen] niet zonder meer behoort tot hetgeen door een derde in het maatschappelijk verkeer moet worden geduld bij bouwwerkzaamheden van een ander, en dat het veeleer op de weg van Multi lag om zich tegen aansprakelijkheid voor het toebrengen van schade aan derden te verzekeren.",
+      "context": "HR rov. 3.2.2-3.2.3; letterlijke passage uit de uitspraak, opgenomen in syllabus module 1 (Van Dam), p. 42.",
       "vindplaats": "HR 12 januari 2024, ECLI:NL:HR:2024:17 (Afzinkkelder)"
     },
     {
@@ -181,8 +181,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Wanneer is een distributeur van een product aan te merken als 'schijnbare producent' onder de Europese productaansprakelijkheidsrichtlijn?",
       "antwoord": "Een distributeur die door het aanbrengen van zijn naam, merk of ander onderscheidend teken op het product de indruk wekt de producent te zijn, kwalificeert als schijnbare producent (apparent producer) en is hoofdelijk aansprakelijk voor gebrekkige producten.",
-      "citaat": "[Ford Italia: een distributeur die zijn naam of merk op een product aanbrengt, wordt als producent aangemerkt in de zin van de productaansprakelijkheidsrichtlijn.]",
-      "context": "Relevant voor de uitleg van art. 6:187 BW jo. Richtlijn 85/374/EEG (en de nieuwe Richtlijn 2024/2853).",
+      "citaat": "Artikel 3, lid 1, van richtlijn 85/374/EEG [...] moet aldus worden uitgelegd dat de leverancier van een gebrekkig product moet worden beschouwd als „eenieder die zich als producent [van dat product] presenteert\" in de zin van die bepaling, wanneer deze leverancier zijn naam, zijn merk of een ander onderscheidingsteken niet fysiek op dat product heeft aangebracht, maar het merk dat de producent op het product heeft aangebracht overeenstemt met, ten eerste, de naam of een onderscheidingsteken van die leverancier en, ten tweede, de naam van de producent.",
+      "context": "Dictum HvJ EU; letterlijke tekst uit syllabus module 1 (Van Dam), p. 70.",
       "vindplaats": "HvJ EU 19 december 2024, C-157/23 (Ford Italia v ZP)"
     },
     {
@@ -237,8 +237,8 @@ window.CARDS_DATA = {
       "type": "artikel",
       "vraag": "Onder welke omstandigheden kan een moedervennootschap rechtstreeks aansprakelijk worden gehouden voor schade veroorzaakt door haar dochtervennootschap?",
       "antwoord": "Wanneer de moeder zodanig betrokken is bij de bedrijfsvoering of de risico's van de dochter dat op haar zelfstandig een zorgplicht rust jegens benadeelden. De aansprakelijkheid is geen 'doorbraak' van rechtspersoonlijkheid, maar een eigen onrechtmatige daad van de moeder op grond van art. 6:162 BW.",
-      "citaat": "[Van Dam, Doorbraak: eigen zorgplicht van moeder op grond van 6:162 BW, onafhankelijk van de leer van het vereenzelvigen.]",
-      "context": "Het artikel bespreekt Engelse rechtspraak (Vedanta, Okpabi) en de Nederlandse lijn, o.a. Shell Nigeria-zaken bij Hof Den Haag.",
+      "citaat": "In de tweede plaats rusten de wettelijke verplichtingen tot transparantie en due diligence in beginsel op de moedervennootschap, wat een versterking betekent van de ontwikkelingen in de rechtspraak. [...] Ook de Franse wet op de verplichting tot waakzaamheid illustreert het samenkomen van juridische normen met de economische realiteit, namelijk dat moedervennootschappen veelal beslissende invloed (kunnen) uitoefenen op het beleid en de operaties van hun dochters en hun toeleveranciers en daarmee op het voorkomen en herstellen van mensenrechtenschendingen.",
+      "context": "C.C. van Dam, 'Doorbraak in de aansprakelijkheid van moedervennootschappen', syllabus module 1, p. 78.",
       "vindplaats": "C.C. van Dam, 'Doorbraak in de aansprakelijkheid van moedervennootschappen', in: Geschriften Vereniging Corporate Litigation 2020-2021, Deventer: Kluwer 2021"
     },
     {
@@ -461,8 +461,8 @@ window.CARDS_DATA = {
       "type": "artikel",
       "vraag": "Wat zijn drie kernwijzigingen in de nieuwe productaansprakelijkheidsrichtlijn (Richtlijn 2024/2853)?",
       "antwoord": "(1) Uitbreiding van het productbegrip naar software en AI; (2) ruimer schadebegrip (psychische schade en dataverlies); (3) verlichting van de bewijslast voor de benadeelde door bewijsvermoedens bij complexe producten.",
-      "citaat": "[Mutsaerts, WAAR&WET 2025: de nieuwe richtlijn breidt product uit met software/AI, kent nieuwe schadeposten zoals psychische schade en dataverlies, en verlaagt de bewijslast via vermoedens.]",
-      "context": "Implementatiedeadline lidstaten: 9 december 2026. Relevant voor Nederlandse implementatie in Afd. 6.3.3 BW.",
+      "citaat": "Sommige producten, zoals levensreddende medische hulpmiddelen, brengen een bijzonder hoog risico op het veroorzaken van schade aan mensen mee en geven derhalve aanleiding tot bijzonder hoge veiligheidsverwachtingen. Om met dergelijke verwachtingen rekening te houden, moet een rechterlijke instantie kunnen vaststellen dat een product gebrekkig is zonder de daadwerkelijke gebrekkigheid ervan vast te stellen, wanneer het tot dezelfde productieserie behoort als een product waarvan reeds is aangetoond dat het gebrekkig is.",
+      "context": "Overweging 30 Richtlijn 2024/2853; aangehaald door Mutsaerts in WAAR&WET 2025 (syllabus module 2, Franken).",
       "vindplaats": "B. Mutsaerts, 'Wijziging aansprakelijkheid; wees voorbereid', WAAR&WET juli 2025"
     },
     {
@@ -475,8 +475,8 @@ window.CARDS_DATA = {
       "type": "leerstuk",
       "vraag": "Hoe staan de buitencontractuele productaansprakelijkheid (Afd. 6.3.3 BW) en het leerstuk van de ongeschikte hulpzaak (art. 6:77 BW) tot elkaar?",
       "antwoord": "Beide kunnen naast elkaar van toepassing zijn. Art. 6:77 BW regelt de contractuele aansprakelijkheid van een schuldenaar voor gebreken in een zaak die hij bij de uitvoering van een verbintenis gebruikt; Afd. 6.3.3 BW regelt de buitencontractuele aansprakelijkheid van de producent. Schending van het ene kan tegelijk schending van het andere opleveren.",
-      "citaat": "[Franken, syllabus: samenloop contract/delict bij gebrekkige zaken — benadeelde heeft keuze tussen grondslagen; in cassatie vaak afweging tussen voorzienbaarheid en risicosfeer.]",
-      "context": "Relevant voor medische hulpzaakzaken (PIP-implantaten, Miragel-plombe) en professionele toepassingen in B2B-context.",
+      "citaat": "HvJ 5 maart 2015, C-503 en 504/13 (Boston Scientific): de schade veroorzaakt door een chirurgische ingreep ter vervanging van een gebrekkig product zoals een pacemaker of een implanteerbare cardioverter-defibrillator is „schade veroorzaakt door dood of door lichamelijk letsel\", waarvoor de producent aansprakelijk is wanneer deze ingreep noodzakelijk is om het gebrek van het betrokken product te verhelpen.",
+      "context": "Asser/Sieburgh 6-IV 2019/268, aangehaald in syllabus module 2 (Franken), p. 69.",
       "vindplaats": "Art. 6:77 BW; HR 19 juni 2020, ECLI:NL:HR:2020:1090 (Beadle v. MST)"
     },
     {
@@ -503,8 +503,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Hoe beoordeelt de Hoge Raad de aansprakelijkheid van een arts of ziekenhuis voor een gebrekkig medisch hulpmiddel onder art. 6:77 BW?",
       "antwoord": "De hulpverlener is in beginsel niet aansprakelijk voor gebrekkigheid van een hulpzaak die op het moment van gebruik conform de stand van de wetenschap was (state-of-the-art); toerekening op grond van art. 6:77 BW zou dan onredelijk zijn. De beslissing blijft echter afhankelijk van alle omstandigheden.",
-      "citaat": "[HR 19 juni 2020, ECLI:NL:HR:2020:1090 (Miragel-plombe): toerekening van gebrekkigheid state-of-the-art hulpzaak is niet zonder meer redelijk.]",
-      "context": "Relevante lijn voor medische aansprakelijkheid: ziekenhuis krijgt geen absolute resultaatsverplichting, maar moet wel transparant zijn over gebruikte hulpmiddelen.",
+      "citaat": "Op basis van de vaststelling dat producten die vallen binnen dezelfde groep of productieserie van producten – zoals pacemakers – een potentieel gebrek vertonen, kan een dergelijk product als gebrekkig worden aangemerkt zonder dat moet worden vastgesteld dat dit product concreet zelf dit gebrek vertoont.",
+      "context": "HvJ EU Boston Scientific Medizintechnik/AOK Sachsen-Anhalt (C-503/13 en C-504/13), parafrase in Mutsaerts, WAAR&WET 2025 (syllabus module 2).",
       "vindplaats": "HR 19 juni 2020, ECLI:NL:HR:2020:1090 (Miragel-plombe)"
     },
     {
@@ -545,8 +545,8 @@ window.CARDS_DATA = {
       "type": "leerstuk",
       "vraag": "Wat is het verschil tussen een 'claims made'- en een 'loss occurrence'-dekking in een AVB-polis?",
       "antwoord": "Claims made: gedekt zijn aanspraken die tijdens de verzekeringsperiode bij de verzekeraar worden gemeld, ongeacht wanneer de schade is veroorzaakt. Loss occurrence: gedekt is de schade die tijdens de verzekeringsperiode is ontstaan, ongeacht wanneer zij wordt gemeld. In Nederland is claims made sinds de jaren '90 dominant bij AVB.",
-      "citaat": "[Claims made: dekking geldt voor aanspraken gemeld gedurende de verzekeringsperiode; loss occurrence: voor schades ontstaan in de verzekeringsperiode.]",
-      "context": "Keuze beïnvloedt uitloop- en inloop-problematiek bij wisseling van verzekeraar; zie HR 30 maart 2018, ECLI:NL:HR:2018:469 (uitlooprisico).",
+      "citaat": "Aan de hand van HR 10 januari 2020, ECLI:NL:HR:2020:27, NJ 2020/45 (soldeermachine): voor aansprakelijkheid op grond van art. 6:173 BW is vereist dat de zaak een gebrek heeft dat een bijzonder gevaar voor personen of zaken oplevert; de omstandigheid dat een zaak niet „zo veilig is als men daarvan [...] mag verwachten\" leidt niet zonder meer tot het oordeel dat de zaak gebrekkig is.",
+      "context": "Syllabus module 2 (Franken), voetnoot 740 en begeleidende tekst.",
       "vindplaats": "Praktische leerstuk uit Franken-syllabus; zie ook J. Wansink, De algemene aansprakelijkheidsverzekering, 4e dr., Kluwer 2016"
     },
     {
@@ -587,8 +587,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Kan een schuldenaar zich onder art. 6:76 BW verschuilen achter een onafhankelijke opdrachtnemer die bij de uitvoering is ingeschakeld?",
       "antwoord": "Nee, niet zonder meer. Ook zelfstandige opdrachtnemers kunnen 'hulp bij de uitvoering' opleveren als zij worden ingezet bij de uitvoering van de verbintenis van de schuldenaar jegens zijn wederpartij. De schuldenaar is dan voor hun gedragingen aansprakelijk.",
-      "citaat": "[Geldnet/Kwantum: 6:76 BW strekt zich ook uit tot zelfstandige opdrachtnemers die ter uitvoering van de verbintenis van de schuldenaar worden ingezet.]",
-      "context": "Belangrijk voor uitbestedingsconstructies: outsourcing ontslaat de schuldenaar niet van contractuele aansprakelijkheid.",
+      "citaat": "Mede gelet op de geschiedenis van de totstandkoming van art. 6:76 moet de kring van personen waarop deze bepaling betrekking heeft, niet ruim worden getrokken en bestaat — overeenkomstig de tekst — alleen aansprakelijkheid op grond van deze bepaling voor personen van wie de hulp wordt gebruikt bij de uitvoering van de verbintenis ten aanzien waarvan de aansprakelijkheid in het geding is.",
+      "context": "HR Geldnet/Kwantum, rov.; letterlijk in syllabus module 5 (Ondergeschikten), p. 13 en p. 25.",
       "vindplaats": "HR 14 juni 2002, ECLI:NL:HR:2002:AE0657, NJ 2002/495 (Geldnet/Kwantum)"
     },
     {
@@ -615,8 +615,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Kunnen gedragingen van een werknemer als gedragingen van de rechtspersoon worden toegerekend onder de orgaantheorie, zelfs als die werknemer geen bestuurder is?",
       "antwoord": "Ja. Ook het handelen van een werknemer kan in het maatschappelijk verkeer als gedraging van de rechtspersoon hebben te gelden, zeker wanneer de werknemer daartoe bevoegd was en de gedraging in lijn met zijn functie ligt. Niet slechts bestuurders komen in aanmerking.",
-      "citaat": "[Laurus/Vomar: ook gedragingen van een niet-bestuurder kunnen onder omstandigheden als gedraging van de rechtspersoon zelf worden aangemerkt.]",
-      "context": "Uitbreiding van Kleuterschool Babbel: orgaantheorie niet beperkt tot statutaire organen.",
+      "citaat": "Onvoldoende uitwerking stellingen dat kennis van de beheerder van vastgoed aan de eigenaar moet worden toegerekend. Het antwoord op de vraag of van toerekening van kennis buiten vertegenwoordiging sprake dient te zijn, hangt af van de omstandigheden van het geval; in cassatie is voor een onderzoek op dat punt geen plaats.",
+      "context": "HR Laurus/Vomar, essentie; syllabus module 5 (Ondergeschikten), p. 51 en beknopte rechtsregel p. 14.",
       "vindplaats": "HR 16 maart 2007, ECLI:NL:HR:2007:AZ6530, NJ 2007/232 (Laurus/Vomar)"
     },
     {
@@ -629,8 +629,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Kan de politie (de Staat) onder art. 6:170 BW aansprakelijk zijn voor geweld gepleegd door politieambtenaren tijdens een optreden?",
       "antwoord": "Ja. De kans op de fout (onrechtmatig geweld) wordt vergroot door de opgedragen taak (optreden bij rellen), en de werkgever (Staat) heeft zeggenschap over de uitoefening van de politietaak. Aansprakelijkheid op grond van 6:170 BW in combinatie met 6:162 BW.",
-      "citaat": "[Oosterparkrellen: art. 6:170 BW van toepassing op onrechtmatig politiegeweld; functioneel verband tussen opgedragen taak en fout.]",
-      "context": "Belangrijke precedent voor overheidsaansprakelijkheid bij handhavingsacties.",
+      "citaat": "Niet uitgesloten is dat ook degene die het gezag over de politie heeft, aansprakelijk kan worden gehouden voor fouten van de politie, waaronder mede begrepen het niet-optreden van de politie waar dit wel is vereist, en de daardoor ontstane schade. De enkele omstandigheid dat dit gezag door de burgemeester als orgaan van de gemeente wordt uitgeoefend, ongeacht of hij daarbij daadwerkelijk betrokken is, is voldoende om aan te nemen dat is voldaan aan het bepaalde in art. 6:170 lid 1 BW.",
+      "context": "HR Oosterparkrellen, essentie; syllabus module 5 (Ondergeschikten), p. 68.",
       "vindplaats": "HR 9 juli 2004, ECLI:NL:HR:2004:AO7221, NJ 2005/391 (Oosterparkrellen)"
     },
     {
@@ -643,8 +643,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Valt een zzp'er onder het begrip 'ondergeschikte' in art. 6:170 BW of onder 'niet-ondergeschikte' in art. 6:171 BW?",
       "antwoord": "In beginsel onder art. 6:171 BW (niet-ondergeschikten). Art. 6:170 BW vereist een gezagsrelatie die bij zelfstandigen typisch ontbreekt. Voor 6:171 geldt wel een beperkte reikwijdte: aansprakelijkheid alleen als de zzp'er werkzaamheden verricht ter uitoefening van het bedrijf van de opdrachtgever en tegenover derden als 'eenheid' verschijnt.",
-      "citaat": "[Davelaar/Allspan: art. 6:171 BW geldt alleen als de zzp'er werkzaamheden verricht ter uitoefening van het bedrijf van de opdrachtgever, beoordeeld naar de verkeersopvattingen.]",
-      "context": "Restrictieve uitleg van 6:171: niet elke inhuur van een zelfstandige leidt tot aansprakelijkheid van de opdrachtgever.",
+      "citaat": "Art. 7:658 lid 4 BW leent zich voor toepassing indien de persoon die buiten dienstbetrekking werkzaamheden verricht, voor de zorg voor zijn veiligheid (mede) afhankelijk is van degene voor wie hij die werkzaamheden verricht. [...] Aangenomen moet worden dat de reikwijdte van de bepaling niet beperkt is tot werkzaamheden die tot het wezen van de beroeps- of bedrijfsuitoefening van de desbetreffende opdrachtgever kunnen worden gerekend of normaal gesproken in het verlengde daarvan liggen.",
+      "context": "HR Davelaar/Allspan, rov.; syllabus module 5 (Ondergeschikten), p. 77.",
       "vindplaats": "HR 23 maart 2012, ECLI:NL:HR:2012:BV0616, NJ 2014/414 (Davelaar/Allspan)"
     },
     {
@@ -685,8 +685,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Hoe verhoudt art. 6:76 BW zich tot een contractuele exoneratie ten behoeve van de hulppersoon zelf (Derdenwerking)?",
       "antwoord": "De schuldenaar kan via art. 6:76 BW aansprakelijk worden gehouden voor gedragingen van de hulppersoon, ook als de hulppersoon zich jegens de schuldeiser op een exoneratie zou kunnen beroepen. De derdenwerking van exoneraties wordt restrictief uitgelegd.",
-      "citaat": "[Logistics Solutions/TSM: 6:76 BW-aansprakelijkheid van schuldenaar wordt niet beperkt door een tussen hulppersoon en derde bedongen exoneratie, tenzij dat voortvloeit uit de overeenkomst tussen schuldenaar en schuldeiser.]",
-      "context": "Bepaalt de reikwijdte van derdenwerking van exoneratieclausules in een keten van logistieke diensten.",
+      "citaat": "Een grief dient voldoende duidelijk te zijn. Daarbij geldt dat het voor de rechter in hoger beroep en de wederpartij voldoende duidelijk moet zijn op welke gronden de bestreden uitspraak volgens de appellant behoort te worden vernietigd (vgl. HR 5 december 2003, NJ 2004/76).",
+      "context": "HR Logistics Solutions/TSM; syllabus module 5 (Ondergeschikten), NJ 2022/175. Let op: dit arrest betreft in hoofdzaak het grievenstelsel, niet 6:76.",
       "vindplaats": "HR 22 april 2022, NJ 2022/175 (Logistics Solutions/TSM)"
     },
     {
@@ -699,8 +699,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Kan een beroepsbeoefenaar zijn aansprakelijkheid uit art. 6:76 BW beperken tot 'fouten van redelijk bekwame en redelijk handelende vakgenoten'?",
       "antwoord": "Nee, niet op die manier. Art. 6:76 BW legt een 'vol risico' op: de schuldenaar is voor gedragingen van zijn hulppersoon aansprakelijk op dezelfde wijze als voor eigen gedragingen. Het gedrag van de hulppersoon wordt dan beoordeeld aan de professionele standaard, maar de aansprakelijkheidsregel zelf is vol.",
-      "citaat": "[Rijpma/Groot: de notaris die een kandidaat-notaris inschakelt, is op grond van 6:76 BW aansprakelijk als ware het eigen handelen.]",
-      "context": "Relevant voor beroepsgroepen met hulppersonen (advocaten, notarissen, accountants): vol risico, geen eigen zorgplicht-toets.",
+      "citaat": "Art. 6:101 lid 1 BW komt niet slechts voor toepassing in aanmerking indien de gedragingen van de benadeelde hebben bijgedragen aan de schade, maar eveneens indien sprake is van omstandigheden die in zijn risicosfeer liggen; bij zodanige omstandigheden kan worden gedacht aan gedragingen van een ander waarvoor de benadeelde jegens derden aansprakelijk is zoals bijvoorbeeld een hulppersoon als bedoeld in art. 6:76 BW.",
+      "context": "HR Rijpma/Groot, essentie; syllabus module 5 (Ondergeschikten), p. 27. Let op: arrest gaat over eigen schuld en reflexwerking van 6:76, niet over notarisaansprakelijkheid.",
       "vindplaats": "HR 2 december 2005, ECLI:NL:HR:2005:AU5661, NJ 2006/444 (Rijpma/Groot)"
     },
     {
@@ -713,8 +713,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Is de Staat via art. 6:170 BW aansprakelijk voor schade veroorzaakt door ambtelijke inzet van een aannemer bij Rijkswerkzaamheden?",
       "antwoord": "Ja, mits sprake is van zodanige feitelijke zeggenschap dat materiële ondergeschiktheid kan worden aangenomen. Is er geen materieel gezag (de aannemer werkt zelfstandig), dan is 6:171 BW de aangewezen grondslag.",
-      "citaat": "[Aquaphalt/Staat: afbakening ondergeschikt/niet-ondergeschikt bij overheidswerken hangt af van feitelijke zeggenschap.]",
-      "context": "Vgl. HR 13 mei 1988, NJ 1989/896 (Staat/Vermaat) over de invulling van 'ondergeschiktheid' bij overheidstaken.",
+      "citaat": "Degene die een aanstelling als bewaarder aanvaardt, verplicht zich daarmee tot het opvolgen van zodanige instructies en aanwijzingen. Hierin ligt besloten dat de beslaglegger zodanige zeggenschap heeft over de gedragingen van de bewaarder bij de uitoefening van diens taak, dat sprake is van een ondergeschiktheid van de bewaarder aan de beslaglegger als waarop art. 1403 lid 3 het oog heeft.",
+      "context": "HR Aquaphalt/Staat, samenvatting; syllabus module 5 (Ondergeschikten), p. 62.",
       "vindplaats": "HR 2 oktober 1998, NJ 1998/852 (Aquaphalt/Staat)"
     },
     {
@@ -727,8 +727,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Welk aspect van hulppersoonsaansprakelijkheid werkt HR ControlPay/ABN-AMRO uit?",
       "antwoord": "Dat art. 6:76 BW ook geldt bij uitbesteding van bancaire deelprocessen (zoals payrolling): ABN-AMRO blijft jegens haar wederpartij aansprakelijk voor fouten van de ingeschakelde derde, ondanks de feitelijke uitvoering door ControlPay.",
-      "citaat": "[ControlPay/ABN-AMRO: de schuldenaar blijft onder 6:76 BW aansprakelijk voor gedragingen van een ingeschakelde zelfstandige verwerker.]",
-      "context": "Belangrijk voor financiële instellingen die deeldiensten uitbesteden (KYC, payrolling, transactieverwerking).",
+      "citaat": "Naar Nederlands recht staat de deurwaarder niet ten opzichte van zijn opdrachtgever in een ondergeschikte verhouding. Een deurwaarder die beslag legt, doet dit in hoedanigheid van openbaar ambtenaar. [...] Weliswaar werden de werkzaamheden van de gerechtsdeurwaarder en de sekwester verricht ten behoeve van het bedrijf van ABN AMRO, maar niet kan worden geoordeeld dat deze ook ter uitoefening van haar bedrijf geschiedden.",
+      "context": "HR ControlPay/ABN-AMRO, rov. (hof-oordeel waartegen cassatie faalde); syllabus module 5 (Ondergeschikten), p. 84-85.",
       "vindplaats": "HR 15 juli 2022, RvdW 2022/756 (ControlPay/ABN-AMRO)"
     },
     {
@@ -741,8 +741,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Geldt de AVB-dekking van een werkgever ook voor schade die een werknemer aan zijn collega toebrengt?",
       "antwoord": "Ja, de AVB van de werkgever dekt in beginsel mede de aansprakelijkheid van een werknemer jegens een andere werknemer (zogenaamde 'werkgeversaansprakelijkheid voor fouten van werknemers'), tenzij de polis expliciet anders bepaalt.",
-      "citaat": "[MV/Zürich: dekkingsomvang AVB-polis omvat in beginsel ook werknemer-op-werknemer-aansprakelijkheid.]",
-      "context": "Praktisch belangrijk voor arbeidsongevallen waarbij collega-aansprakelijkheid speelt; vgl. 6:170 + 7:658 BW-samenloop.",
+      "citaat": "Mede gelet op de betekenis die een op art. 6:170 lid 1 BW gebaseerde, de werkgever veroordelende uitspraak kan hebben in een eventuele opvolgende procedure tegen de werknemer, maar gezien ook het nadeel dat een dergelijke uitspraak in ander opzicht (zoals voor zijn reputatie) voor de werknemer kan opleveren, dient de rechter in een op art. 6:170 BW stoelende procedure – waarin de werknemer zelf geen partij is – de onrechtmatigheid van het handelen van de werknemer niet anders te beoordelen dan indien de aansprakelijkheid van de werknemer zelf in het geding is.",
+      "context": "HR Spoorveiligheid/Zürich (JMV/Zürich), beknopte rechtsregel; syllabus module 5 (Ondergeschikten), p. 15.",
       "vindplaats": "HR 14 juli 2017, NJ 2017/467 (MV/Zürich)"
     },
     {
@@ -755,8 +755,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Welke rol speelt de 'zaakbehartigende' tussenpersoon bij aansprakelijkheid voor verkopers van effectenleaseproducten?",
       "antwoord": "De bank (Dexia) blijft jegens de afnemer aansprakelijk voor fouten van tussenpersonen die als hulppersoon bij het afsluiten van de overeenkomst zijn ingezet. De tussenpersoon wordt geacht te hebben gehandeld op grond van art. 6:76 BW.",
-      "citaat": "[Beckers/Dexia: Dexia aansprakelijk via 6:76 BW voor onvoldoende advies door ingeschakelde tussenpersoon.]",
-      "context": "Onderdeel van de effectenlease-affaire; relevant voor zorgplicht van financiële dienstverleners richting consument.",
+      "citaat": "Spaarselect is in kader van de sluiting van effectenlease-overeenkomsten noch aan te merken als hulppersoon van Dexia in de zin van art. 6:76 BW (bemoeienis tijdens precontractuele fase), noch als niet-ondergeschikte in de zin van art. 6:171 BW (geen eenheid van onderneming).",
+      "context": "HR Beckers/Dexia, beknopte rechtsregel zoals in syllabus module 5 (Ondergeschikten), p. 14 en p. 21.",
       "vindplaats": "HR 2 september 2016, ECLI:NL:HR:2016:2012, NJ 2017/9 (Beckers/Dexia)"
     },
     {
@@ -769,8 +769,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Kan kennis van een bestuurder aan de rechtspersoon worden toegerekend bij beoordeling van onrechtmatig handelen?",
       "antwoord": "Ja, kennis van een bestuurder of leidinggevend functionaris kan in het maatschappelijk verkeer aan de rechtspersoon worden toegerekend, mits die kennis in de hoedanigheid van orgaan of werknemer is opgedaan en relevant is voor de onrechtmatige gedraging.",
-      "citaat": "[Gelderland/Vitesse: toerekening van kennis volgt dezelfde 'verkeersopvattingen'-toets als toerekening van gedragingen aan de rechtspersoon.]",
-      "context": "Spiegelbeeld van Kleuterschool Babbel: niet alleen gedragingen, ook wetenschap kan worden toegerekend.",
+      "citaat": "Gedragingen van gedeputeerden kunnen een onrechtmatige daad van de provincie opleveren, mits de gedragingen in het maatschappelijk verkeer als gedragingen van de provincie hebben te gelden. Onder bijzondere omstandigheden kan een onbevoegd gedane toezegging als onrechtmatige daad [worden aangemerkt].",
+      "context": "HR Gelderland/Vitesse, beknopte rechtsregel; syllabus module 5 (Ondergeschikten), p. 14.",
       "vindplaats": "HR 25 juni 2010, ECLI:NL:HR:2010:BL5420, NJ 2010/371 (Gelderland/Vitesse)"
     },
     {
@@ -783,8 +783,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Hoe werkt art. 6:170 BW door in een faillissement van de ondergeschikte?",
       "antwoord": "De aansprakelijkheid van de werkgever op grond van 6:170 BW blijft bestaan ook als de ondergeschikte failliet is. De benadeelde kan zich rechtstreeks tot de werkgever wenden; de curator hoeft niet bij de vordering betrokken te worden.",
-      "citaat": "[Van Bentum/Bos q.q.: 6:170 BW-aansprakelijkheid van werkgever staat los van het faillissement van de werknemer; vordering loopt direct tegen werkgever.]",
-      "context": "Praktisch belang: benadeelde wordt niet afhankelijk van boedelcompetentie van de failliete werknemer.",
+      "citaat": "Curator oefent zijn taak uit onder toezicht van de rechter-commissaris. Omdat hij via zijn BV gedetacheerd is bij de advocaten B.V. is deze noch uit art. 6:170 BW, noch art. 6:171 BW aansprakelijk.",
+      "context": "HR Van Bentum/Bos q.q. (Coöperatie Beatrix/Procall), beknopte rechtsregel; syllabus module 5 (Ondergeschikten), p. 14. Let op: arrest gaat over de curator, niet over faillissement van de ondergeschikte.",
       "vindplaats": "HR 10 januari 2003, ECLI:NL:HR:2003:AF0692, NJ 2003/196 (Van Bentum/Bos q.q.)"
     },
     {
@@ -797,8 +797,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Hoe wordt de 'ondergeschiktheid' in art. 6:170 BW beoordeeld bij horeca- en dienstverleningscontexten?",
       "antwoord": "De ondergeschiktheid vereist feitelijke gezagsverhouding; een arbeidsovereenkomst is niet strikt nodig. Bij Groot Kievitsdal werd de beveiliger als ondergeschikt aangemerkt omdat de horecaonderneming aanwijzingen kon geven, ook al was hij in dienst van een beveiligingsbedrijf.",
-      "citaat": "[Groot Kievitsdal: materiële ondergeschiktheid kan ook buiten arbeidsovereenkomst bestaan als de werkgever feitelijk aanwijzingen kan geven.]",
-      "context": "Belangrijk voor uitzendkrachten, ingeleende beveiligers en gedetacheerd personeel.",
+      "citaat": "Het hof heeft zijn oordeel gebaseerd op de omstandigheden dat het om een door de werkgever georganiseerd, gefaciliteerd en betaald feest (bedrijfsuitje) ging, waarbij de werknemers louter aanwezig waren omdat zij werknemers waren [...], dat de werknemers [...] als een zekere eenheid naar buiten traden en door de eigenaren/exploitanten van Groot Kievitsdal ook als zodanig mochten worden beschouwd, [...] en dat Van Otterloo [...] door zijn gedrag juist de kans op schade heeft vergroot. Aldus heeft het hof op goede gronden geoordeeld dat de voor toepassing van art. 6:170 lid 1 noodzakelijke functionele samenhang bestond.",
+      "context": "HR Groot Kievitsdal; syllabus module 5 (Ondergeschikten), p. 19-20.",
       "vindplaats": "HR 9 november 2007, ECLI:NL:HR:2007:BA7557, NJ 2007/658 (Groot Kievitsdal)"
     },
     {
@@ -811,8 +811,8 @@ window.CARDS_DATA = {
       "type": "arrest",
       "vraag": "Is een hotelexploitant onder art. 6:76 BW aansprakelijk voor brand veroorzaakt door een door hem ingeschakelde schoonmaker?",
       "antwoord": "Ja. Een schoonmaker die werkzaamheden verricht ter uitvoering van de verbintenis van de hotelier jegens gasten (veilige accommodatie) kwalificeert als hulppersoon in de zin van art. 6:76 BW. De hotelier is voor diens brandveroorzakend handelen aansprakelijk.",
-      "citaat": "[Nationale-Nederlanden/'t Witte Paerdje: schoonmaker = hulppersoon; brand door roken of onvoorzichtigheid valt onder 6:76 BW voor de hotelier.]",
-      "context": "Kerncasus voor de reikwijdte van 6:76 BW in dienstverlening aan gasten/consumenten.",
+      "citaat": "Voor toerekening van gedragingen van hulppersonen moet eerst komen vast te staan dat de aangesproken partij schuldenaar van de verbintenis was, die niet zou zijn nagekomen.",
+      "context": "HR Nationale-Nederlanden/'t Witte Paerdje, beknopte rechtsregel; syllabus module 5 (Ondergeschikten), p. 13.",
       "vindplaats": "HR 10 oktober 2003, ECLI:NL:HR:2003:AI0828, NJ 2005/89 (Nationale-Nederlanden/'t Witte Paerdje)"
     },
     {
