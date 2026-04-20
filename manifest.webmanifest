@@ -1,7 +1,7 @@
 {
-  "name": "Grotius Overhoor",
-  "short_name": "Grotius",
-  "description": "Overhoorapp voor de Grotius-specialisatieopleiding Onrechtmatige daad & Aansprakelijkheid.",
+  "name": "Grotius O&A",
+  "short_name": "Grotius O&A",
+  "description": "Overhoorapp voor de Grotius-specialisatieopleiding Onderneming en aansprakelijkheid.",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",

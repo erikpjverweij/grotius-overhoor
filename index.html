@@ -10,7 +10,7 @@
 <meta name="color-scheme" content="dark">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Grotius Overhoor</title>
+<title>Grotius O&amp;A</title>
 
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -112,6 +112,14 @@
     color: var(--text-3);
     margin: 0;
     letter-spacing: 0.02em;
+  }
+
+  .app-footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-3);
+    padding: 32px 16px 24px;
+    letter-spacing: 0.04em;
   }
 
   .section-label {
@@ -323,6 +331,30 @@
     gap: 6px;
   }
   .btn-ghost:hover { color: var(--text); background: var(--surface); }
+
+  .btn-context {
+    width: 100%;
+    background: transparent;
+    color: var(--text-2);
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .btn-context:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(212,184,120,0.05);
+  }
+  .btn-context svg { opacity: 0.7; }
 
   .btn-link {
     background: transparent;
@@ -561,8 +593,8 @@
 <!-- ===================== HOOFDSCHERM ===================== -->
 <main id="home" class="container">
   <header style="margin-bottom: 28px;">
-    <h1 class="app-title">Grotius <em>Overhoor</em></h1>
-    <p class="app-subtitle">Onrechtmatige daad &amp; Aansprakelijkheid · 2026</p>
+    <h1 class="app-title">Grotius <em>O&amp;A</em></h1>
+    <p class="app-subtitle">Onderneming en aansprakelijkheid · 2026</p>
   </header>
 
   <!-- Voortgangstegel -->
@@ -690,6 +722,11 @@
         <p class="answer-label">Vindplaats</p>
         <p class="vindplaats" id="card-vindplaats">—</p>
       </div>
+
+      <button id="context-btn" class="btn-context" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Vraag Claude om extra context
+      </button>
     </div>
 
     <div class="reveal-spacer">
@@ -992,6 +1029,31 @@ function resetProgress() {
   renderFilterCount();
 }
 
+function askClaudeForContext() {
+  const card = state.session.queue[state.session.index];
+  if (!card) return;
+  const lines = [
+    'Ik bestudeer voor de Grotius-specialisatieopleiding Onderneming en aansprakelijkheid (2026).',
+    '',
+    `Module ${card.module} — ${card.module_titel ?? ''}`,
+    `Type: ${card.type}`,
+    '',
+    `Vraag: ${card.vraag}`,
+    '',
+    `Antwoord (mijn samenvatting): ${card.antwoord ?? '—'}`,
+  ];
+  if (card.citaat) lines.push('', `Citaat uit syllabus: "${card.citaat}"${card.bron ? ` — ${card.bron}` : ''}`);
+  if (card.context) lines.push('', `Aanvullende context: ${card.context}`);
+  if (card.vindplaats) lines.push('', `Vindplaats: ${card.vindplaats}`);
+  lines.push(
+    '',
+    'Kun je dit verder uitleggen? Ik ben advocaat aansprakelijkheidsrecht, dus de basis hoef je niet uit te leggen — focus op nuance, kritiek in de literatuur, verwante arresten of leerstukken, en wat ik moet weten voor het tentamen.'
+  );
+  const prompt = lines.join('\n');
+  const url = `https://claude.ai/new?q=${encodeURIComponent(prompt)}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
 /* ---------- init ---------- */
 async function init() {
   loadProgress();
@@ -1018,6 +1080,7 @@ async function init() {
   document.getElementById('back-btn').addEventListener('click', backToHome);
   document.getElementById('end-back-btn').addEventListener('click', backToHome);
   document.getElementById('reset-btn').addEventListener('click', resetProgress);
+  document.getElementById('context-btn').addEventListener('click', askClaudeForContext);
 
   ['filter-module', 'filter-type', 'filter-status'].forEach(id => {
     document.getElementById(id).addEventListener('change', renderFilterCount);
@@ -1032,5 +1095,7 @@ async function init() {
 
 init();
 </script>
+
+<footer class="app-footer">© 2026 Erik Verweij · Alle rechten voorbehouden</footer>
 </body>
 </html>
