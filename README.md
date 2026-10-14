@@ -8,7 +8,7 @@ Sinds 14 oktober 2026 beperkt tot rechtspraak. De eerdere kaartenapp (439 kaarte
 
 `../2026.08.19 Grotius O&A - Rechtspraak per module.docx` is leidend. Dat document bevat per uitspraak: verwijzing (ECLI + vindplaats), kern, feiten, leerstuk, bepalend artikel met wettekst, rechtsregel in eigen woorden, verband met andere uitspraken en het letterlijke citaat. Bijlage A verantwoordt afwijkingen van de syllabi (onder meer gecorrigeerde ECLI's).
 
-`generator/parse_rechtspraak.py` leest dat document en schrijft `cases.json` en `cases.js`. Na een wijziging in het document: script draaien, cache-versie in `sw.js` verhogen, committen en pushen.
+`generator/parse_rechtspraak.py` leest dat document en schrijft `cases.json` en `cases.js` (vereist Python met `python-docx`). Na een wijziging in het document: `python generator/parse_rechtspraak.py` draaien vanuit de map overhoor-app, `CACHE_NAME` in `sw.js` verhogen, committen en pushen. Verbanden tussen uitspraken worden herkend op de naam zoals die in het verband-blok staat, ook zonder toevoeging tussen haken; Deloitte/Hassink wordt genoemd maar is geen eigen uitspraak in het document en blijft dus zonder link.
 
 ## Bestanden
 
@@ -30,7 +30,9 @@ Sinds 14 oktober 2026 beperkt tot rechtspraak. De eerdere kaartenapp (439 kaarte
 
 Afleiders bij meerkeuze komen eerst uit het verband-blok van de uitspraak, dan uit dezelfde module, dan uit uitspraken over hetzelfde artikel. Uitspraken die in twee modules staan, verschijnen nooit als afleider van zichzelf.
 
-Bij elke essentie zijn uitklapbaar: feiten, letterlijk citaat, verband, wettekst, bron (met link naar de syllabus-pdf op de juiste pagina; werkt alleen op de pc waar de Grotius-map staat) en een knop "Vraag Claude" die claude.ai opent met de uitspraak als vraag.
+Bij elke essentie zijn uitklapbaar: feiten, letterlijk citaat, verband (uitgaand én inkomend, klikbaar), wettekst, bron en een knop "Vraag Claude" die claude.ai opent met de uitspraak als vraag. De bron noemt de pdf-pagina van de syllabus; een klikbare link naar de pdf verschijnt alleen als `index.html` rechtstreeks vanaf de pc wordt geopend (browsers staan geen link van een website naar een lokaal bestand toe).
+
+Na het pushen van een nieuwe versie haalt de app die bij de volgende opening zelf op en herlaadt één keer; tijdens een ronde wacht hij daarmee tot de ronde klaar is.
 
 ## Voortgang
 

@@ -22,7 +22,8 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:var(--bg);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;min-height:100%}
 body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
-button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+input,textarea{font-family:inherit;font-size:16px} /* 16px voorkomt automatisch inzoomen op iPhone */
 a{color:var(--blue)}
 .wrap{max-width:720px;margin:0 auto;padding:16px 16px 40px}
 header.app{display:flex;align-items:flex-end;justify-content:space-between;padding:18px 0 14px;border-bottom:1px solid var(--border);margin-bottom:16px}
@@ -105,8 +106,8 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--text
 .modhead .t{font-weight:600;font-size:14px}
 .modhead .c{color:var(--text3);font-size:12px}
 .kbd{display:inline-block;padding:1px 6px;border:1px solid var(--border2);border-radius:5px;font-size:11px;color:var(--text3);margin-left:4px}
-textarea.code{width:100%;min-height:90px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:12px;padding:10px;font-family:ui-monospace,monospace}
-.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:9}
+textarea.code{width:100%;min-height:90px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:16px;padding:10px;font-family:ui-monospace,monospace}
+.toast{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:9}
 .toast.show{opacity:1}
 .app-footer{text-align:center;font-size:11px;color:var(--text3);padding:32px 16px 24px;letter-spacing:.04em}
 .hide{display:none!important}
@@ -184,7 +185,7 @@ textarea.code{width:100%;min-height:90px;background:var(--bg2);border:1px solid 
   <div class="card">
     <div class="row">
       <div class="seg" id="seg-lf"><button data-v="alle" class="on">Alle</button><button data-v="u">Ken ik nog niet</button><button data-v="k">Ken ik</button><button data-v="nieuw">Nieuw</button></div>
-      <input id="zoek" placeholder="Zoek naam, artikel, leerstuk…" style="flex:1;min-width:160px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:9px 12px;color:var(--text);font-size:14px">
+      <input id="zoek" placeholder="Zoek naam, artikel, leerstuk…" style="flex:1;min-width:160px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:9px 12px;color:var(--text);font-size:16px">
     </div>
   </div>
   <div id="lijst" class="list"></div>
@@ -207,7 +208,7 @@ textarea.code{width:100%;min-height:90px;background:var(--bg2);border:1px solid 
     <p class="muted" style="margin-bottom:10px">Je voortgang staat op dit apparaat. Kopieer de code hieronder en plak die op je andere apparaat (pc ↔ iPhone). Importeren voegt samen: de nieuwste beoordeling per uitspraak wint.</p>
     <div class="acts"><button class="btn ghost" id="exp-copy">Kopieer code</button><button class="btn ghost" id="exp-share">Deel / download</button></div>
     <textarea class="code" id="imp-code" placeholder="Plak hier een code van je andere apparaat…" style="margin-top:12px"></textarea>
-    <div class="acts"><button class="btn" id="imp-go" class="one">Importeren</button><button class="btn ghost" id="reset">Alles wissen</button></div>
+    <div class="acts"><button class="btn" id="imp-go">Importeren</button><button class="btn ghost" id="reset">Alles wissen</button></div>
   </div>
   <div class="card">
     <h2>Sneltoetsen (pc)</h2>
@@ -251,14 +252,23 @@ function status(id){ return pr(id).s; } // 'k' | 'u' | null
 async function loadData(){
   if (window.CASES_DATA && Array.isArray(window.CASES_DATA.cases)) { state.data = window.CASES_DATA; }
   else {
-    const r = await fetch('cases.json?t=' + Date.now(), {cache:'no-cache'});
+    const r = await fetch('cases.json', {cache:'no-cache'});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
     state.data = await r.json();
   }
   state.cases = state.data.cases; state.modules = state.data.modules;
-  state.cases.forEach(c => { state.byId[c.id] = c; c.art = baseArt(c.artikel_kort); });
+  state.cases.forEach(c => { state.byId[c.id] = c; c.art = baseArt(c.artikel_kort); c.inkomend = []; });
+  // inkomende verbanden: het document noemt een verband vaak maar bij één van de twee uitspraken
+  state.cases.forEach(c => (c.verband_ids||[]).forEach(id => { const o = state.byId[id]; if (o && !o.inkomend.includes(c.id)) o.inkomend.push(c.id); }));
   document.getElementById('bron-info').textContent = `${state.data.bron} · versie ${state.data.versie} · ${state.cases.length} uitspraken`;
 }
-function baseArt(a){ const m = (a||'').match(/art\.\s*[\d:.a-z]+\s*(?:lid\s*\d+\s*)?(?:BW|Rv|Fw|Awb|Wft|Wna|VWEU|EVRM|Ow|Wro|Sr|RO)?/i); return m ? m[0].replace(/\s*lid\s*\d+/i,'').replace(/\s+/g,' ').trim() : (a||'').split('(')[0].trim(); }
+function baseArt(a){
+  // "art. 6:162 BW (lid 2)" → "art. 6:162 BW"; onbekende wetten: alles vóór de haak
+  const s = (a||'').split('(')[0].replace(/\s*lid\s*\d+(\s*(en|,)\s*\d+)*/ig,'').replace(/\s+/g,' ').trim();
+  const m = s.match(/^art\.\s*[\d:.a-z]+\s+(BW|Rv|Fw|Awb|Wft|Wna|Wwft|VWEU|EVRM|Ow|Wro|Sr|RO)\b/i);
+  return m ? m[0] : s;
+}
+const MODES = ['naam','ess','mc-naam','mc-ess','leer'];
 function modTitle(m){ const t = (state.modules[m]||{}).titel||''; return t.length>48 ? t.slice(0,46)+'…' : t; }
 function esc(s){ return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
@@ -286,9 +296,13 @@ function weightedPick(list, n){
   return out;
 }
 function updateSelInfo(){
-  const p = pool(); const n = state.n===0 ? p.length : Math.min(state.n, p.length);
-  document.getElementById('sel-info').textContent = `${p.length} beschikbaar · ${n} in deze ronde`;
-  document.getElementById('start').disabled = p.length===0 || (state.mode==='leer' && p.length<4);
+  const el = document.getElementById('sel-info'); if (!el) return;
+  const p = pool();
+  let n, txt;
+  if (state.mode==='leer') { n = buildLeerQueue(p).length; txt = `${p.length} uitspraken beschikbaar · ${n} leerstukvragen in deze ronde`; }
+  else { n = state.n===0 ? p.length : Math.min(state.n, p.length); txt = `${p.length} beschikbaar · ${n} in deze ronde`; }
+  el.textContent = txt;
+  document.getElementById('start').disabled = n===0;
   renderTopStat();
 }
 function renderTopStat(){
@@ -306,7 +320,7 @@ function renderModChips(){
   Object.keys(state.modules).sort().forEach(m => {
     const cnt = state.cases.filter(c=>c.module===m).length; if(!cnt) return;
     const b = document.createElement('button'); b.className='chip'+(state.selMods.has(m)?' on':'');
-    b.innerHTML = `<span>${m}</span><small>${modTitle(m)}</small><small>· ${cnt}</small>`;
+    b.innerHTML = `<span>${esc(m)}</span><small>${esc(modTitle(m))}</small><small>· ${cnt}</small>`;
     b.title = state.modules[m].titel;
     b.onclick = () => { state.selMods.has(m) ? state.selMods.delete(m) : state.selMods.add(m); b.classList.toggle('on'); persistSel(); updateSelInfo(); };
     box.appendChild(b);
@@ -314,7 +328,12 @@ function renderModChips(){
 }
 function persistSel(){ try{ localStorage.setItem(LS_KEY+'-sel', JSON.stringify({m:[...state.selMods], mode:state.mode, status:state.status, n:state.n})); }catch(e){} }
 function restoreSel(){
-  try{ const s = JSON.parse(localStorage.getItem(LS_KEY+'-sel')||'null'); if(s){ state.selMods=new Set(s.m); state.mode=s.mode||'naam'; state.status=s.status||'alle'; state.n=s.n??25; } }catch(e){}
+  try{ const s = JSON.parse(localStorage.getItem(LS_KEY+'-sel')||'null'); if(s){
+    state.selMods = new Set((s.m||[]).filter(m => state.modules[m]));
+    state.mode = MODES.includes(s.mode) ? s.mode : 'naam';
+    state.status = ['alle','nieuw','u','k'].includes(s.status) ? s.status : 'alle';
+    state.n = [0,10,25,50].includes(s.n) ? s.n : 25;
+  } }catch(e){}
   if(!state.selMods.size) Object.keys(state.modules).forEach(m=>state.selMods.add(m));
   document.querySelectorAll('#modes .mode').forEach(b=>b.classList.toggle('active', b.dataset.mode===state.mode));
   document.querySelectorAll('#seg-status button').forEach(b=>b.classList.toggle('on', b.dataset.v===state.status));
@@ -344,9 +363,9 @@ document.getElementById('end-back').onclick = () => showTab('start');
 document.getElementById('end-again').onclick = startSession;
 
 function startSession(){
-  const p = pool(); if(!p.length) return;
-  if (state.mode==='leer') { state.queue = buildLeerQueue(p); }
-  else state.queue = weightedPick(p, state.n);
+  const p = pool(); if(!p.length) return toast('Geen uitspraken in deze selectie');
+  state.queue = state.mode==='leer' ? buildLeerQueue(p) : weightedPick(p, state.n);
+  if (!state.queue.length) return toast(state.mode==='leer' ? 'Te weinig uitspraken per artikel voor leerstukvragen' : 'Geen uitspraken in deze selectie');
   state.idx = 0; state.results = []; showTab('run'); renderQ();
 }
 function endSession(){
@@ -355,38 +374,54 @@ function endSession(){
   document.getElementById('end-detail').textContent = r.length ? `${Math.round(ok/r.length*100)}% goed · ${state.mode==='leer'?'leerstukvragen':'uitspraken'}` : 'Geen vragen beantwoord.';
   const wrong = r.filter(x=>!x.ok);
   document.getElementById('end-list').innerHTML = wrong.length ? `<h2>Nog eens bekijken</h2><div class="list">` + wrong.map(x => x.ids.map(id => { const c=state.byId[id]; return `<div class="it" data-id="${id}"><span class="dot u"></span><span class="n">${esc(c.naam)}</span><span class="v">${c.module}</span></div>`; }).join('')).join('') + `</div>` : `<p class="muted">Alles goed. Mooi.</p>`;
-  document.getElementById('end-list').querySelectorAll('.it').forEach(el => el.onclick = () => openDetail(el.dataset.id));
+  document.getElementById('end-list').querySelectorAll('.it').forEach(el => el.onclick = () => openDetail(el.dataset.id, 'end'));
   showTab('end');
 }
 function next(){ state.idx++; if (state.idx >= state.queue.length) endSession(); else renderQ(); }
 
-/* afleiders: verband → zelfde module → zelfde artikel → rest */
+/* naamsleutel: "Sumal" en "Sumal (2021)" tellen als dezelfde uitspraak */
+function nameKey(x){ return x.naam.split(' (')[0].trim().toLowerCase(); }
+function sameCase(a, b){ return a.id===b.id || (a.zelfde_als||[]).includes(b.id) || (b.zelfde_als||[]).includes(a.id) || nameKey(a)===nameKey(b) || a.rechtsregel===b.rechtsregel; }
+
+/* afleiders: verband → zelfde module → zelfde artikel → geselecteerde modules → rest.
+   Nooit dezelfde uitspraak (ook niet onder een andere naam of uit een andere module) en nooit twee keer dezelfde naam of rechtsregel. */
 function distractors(c, n){
-  const excl = new Set([c.id, ...(c.zelfde_als||[])]);
-  const sameName = x => x.naam.split(' (')[0].toLowerCase() === c.naam.split(' (')[0].toLowerCase();
-  const take = (arr) => shuffle(arr.filter(x => !excl.has(x.id) && !sameName(x)));
   const tiers = [
-    take((c.verband_ids||[]).map(id=>state.byId[id]).filter(Boolean)),
-    take(state.cases.filter(x => x.module===c.module)),
-    take(state.cases.filter(x => x.art && x.art===c.art)),
-    take(state.cases.filter(x => state.selMods.has(x.module))),
-    take(state.cases)
-  ];
+    [...(c.verband_ids||[]), ...(c.inkomend||[])].map(id=>state.byId[id]).filter(Boolean),
+    state.cases.filter(x => x.module===c.module),
+    state.cases.filter(x => x.art && x.art===c.art),
+    state.cases.filter(x => state.selMods.has(x.module)),
+    state.cases
+  ].map(t => shuffle(t.slice()));
   const out = [];
-  for (const t of tiers) for (const x of t) { if (out.length>=n) break; if (!out.some(o=>o.id===x.id) && !out.some(o=>sameName(x)&&o.naam===x.naam)) { excl.add(x.id); (x.zelfde_als||[]).forEach(z=>excl.add(z)); out.push(x); } }
+  for (const t of tiers) {
+    for (const x of t) {
+      if (out.length>=n) return out;
+      if (sameCase(x, c) || out.some(o => sameCase(o, x))) continue;
+      out.push(x);
+    }
+  }
   return out;
 }
 
-/* leerstuk-vragen: artikel met >=2 uitspraken in de pool */
+/* leerstuk-vragen: artikel met >=2 uitspraken in de pool; 6 opties, 2-3 juist */
 function buildLeerQueue(p){
   const byArt = {}; p.forEach(c => { if(!c.art) return; (byArt[c.art] = byArt[c.art]||[]).push(c); });
   let qs = Object.entries(byArt).filter(([a,l]) => l.length>=2).map(([a,l]) => ({art:a, items:l}));
   qs = shuffle(qs); if (state.n) qs = qs.slice(0, state.n);
-  return qs.map(q => {
-    const correct = shuffle(q.items.slice()).slice(0, Math.min(3, q.items.length));
-    const others = shuffle(state.cases.filter(c => state.selMods.has(c.module) && c.art!==q.art && !correct.some(k=>k.naam===c.naam))).slice(0, 6-correct.length);
-    return { art:q.art, opts: shuffle([...correct.map(c=>({c,ok:true})), ...others.map(c=>({c,ok:false}))]), total:q.items.length, sel:new Set() };
-  });
+  const out = [];
+  for (const q of qs) {
+    // juiste antwoorden: geen twee met dezelfde naam
+    const correct = []; for (const c of shuffle(q.items.slice())) { if (correct.length>=3) break; if (!correct.some(k=>sameCase(k,c))) correct.push(c); }
+    // afleiders: ander artikel, en niet dezelfde uitspraak als één van ALLE items bij dit artikel
+    const others = []; for (const c of shuffle(state.cases.filter(x => state.selMods.has(x.module) && x.art!==q.art))) {
+      if (others.length >= 6-correct.length) break;
+      if (q.items.some(k=>sameCase(k,c)) || others.some(o=>sameCase(o,c))) continue; others.push(c);
+    }
+    if (correct.length<2 || others.length<2) continue;
+    out.push({ art:q.art, opts: shuffle([...correct.map(c=>({c,ok:true})), ...others.map(c=>({c,ok:false}))]), total:q.items.length, sel:new Set() });
+  }
+  return out;
 }
 
 /* ---------- render vraag ---------- */
@@ -395,20 +430,30 @@ function essBlock(c, withTitle){
   return `<div class="ess">${withTitle?`<div class="vraag">Essentie</div>`:''}<div class="regel">${esc(c.rechtsregel)}</div><div class="kern">${esc(c.kern)}</div><div class="leer">${esc(c.leerstuk_kort)} · ${esc(c.artikel_kort)}</div>${expanders(c)}</div>`;
 }
 function expanders(c){
-  const pdf = c.pdf_pagina ? `<a class="vlink" href="${sylLink(c)}" target="_blank" rel="noopener">Open syllabus op pdf-pagina ${c.pdf_pagina} (pc)</a>` : '';
+  // file://-links worden door browsers geblokkeerd vanaf https; alleen tonen als de app zelf lokaal is geopend
+  const pdf = !c.pdf_pagina ? '' : (location.protocol==='file:' && sylLink(c)!=='#')
+    ? `<a class="vlink" href="${sylLink(c)}" target="_blank" rel="noopener">Open syllabus op pdf-pagina ${c.pdf_pagina}</a>`
+    : `<span class="vlink" style="color:var(--text3)">Syllabus: pdf-pagina ${c.pdf_pagina}</span>`;
   return `<div class="exp" data-id="${c.id}">
-    <button data-p="feiten">Feiten</button><button data-p="citaat">Citaat</button>${c.verband?'<button data-p="verband">Verband</button>':''}<button data-p="wettekst">Wettekst</button><button data-p="bron">Bron</button><button data-p="claude">Vraag Claude</button>
+    <button data-p="feiten">Feiten</button><button data-p="citaat">Citaat</button>${hasVerband(c)?'<button data-p="verband">Verband</button>':''}<button data-p="wettekst">Wettekst</button><button data-p="bron">Bron</button><button data-p="claude">Vraag Claude</button>
   </div>
   <div class="panel hide" data-panel="feiten">${esc(c.feiten)}</div>
   <div class="panel cit hide" data-panel="citaat">${esc(c.citaat)}<div style="font-style:normal;font-size:12px;color:var(--text3);margin-top:8px">${esc(c.bron_citaat)}</div></div>
-  ${c.verband?`<div class="panel hide" data-panel="verband"><b>Verband</b><br>${linkVerband(c)}</div>`:''}
+  ${hasVerband(c)?`<div class="panel hide" data-panel="verband"><b>Verband</b><br>${linkVerband(c)}</div>`:''}
   <div class="panel hide" data-panel="wettekst"><b>${esc(c.artikel)}</b><br>${esc(c.wettekst)}<br><span style="font-size:12px;color:var(--text3)">${esc(c.wettekst_bron)}</span></div>
   <div class="panel hide" data-panel="bron">${esc(c.verwijzing)}<br>${esc(c.bron_syllabus)}${pdf}${c.ook_onder?`<br><span style="font-size:12px">${esc(c.ook_onder)}</span>`:''}</div>`;
 }
+function hasVerband(c){ return !!(c.verband || (c.inkomend||[]).length); }
 function linkVerband(c){
-  let t = esc(c.verband);
-  (c.verband_ids||[]).forEach(id => { const o = state.byId[id]; if(o) t = t.replace(esc(o.naam), `<a href="#" data-open="${id}">${esc(o.naam)}</a>`); });
-  return t;
+  // De generator levert per link de tekst die in het verband-blok staat (verband_links). Langste tekst eerst,
+  // via plaatshouders zodat ingevoegde HTML niet opnieuw wordt gematcht.
+  const links = (c.verband_links || (c.verband_ids||[]).map(id => ({id, tekst:(state.byId[id]||{}).naam||''}))).filter(l => l.tekst && state.byId[l.id]).sort((a,b)=>b.tekst.length-a.tekst.length);
+  let t = c.verband || ''; const slots = [];
+  links.forEach(l => { if (t.includes(l.tekst)) t = t.split(l.tekst).join(`\u0000${slots.push(l)-1}\u0000`); });
+  let html = t ? esc(t).replace(/\u0000(\d+)\u0000/g, (_, i) => { const l = slots[+i]; return `<a href="#" data-open="${l.id}">${esc(l.tekst)}</a>`; }) : '';
+  const inc = (c.inkomend||[]).filter(id => !(c.verband_ids||[]).includes(id)).map(id => state.byId[id]).filter(Boolean);
+  if (inc.length) html += (html ? '<br><br>' : '') + '<span style="color:var(--text3)">Genoemd in het verband bij:</span> ' + inc.map(o => `<a href="#" data-open="${o.id}">${esc(o.naam)}</a>`).join(', ');
+  return html;
 }
 function sylLink(c){
   // mapnaam zoeken: eerste map die begint met modulenummer
@@ -423,15 +468,18 @@ function wireExpanders(root){
     if (p==='claude') return askClaude(state.byId[b.closest('.exp').dataset.id]);
     const panel = box.querySelector(`[data-panel="${p}"]`); const on = panel.classList.toggle('hide'); b.classList.toggle('on', !on);
   });
-  root.querySelectorAll('[data-open]').forEach(a => a.onclick = e => { e.preventDefault(); openDetail(a.dataset.open); });
+  root.querySelectorAll('[data-open]').forEach(a => a.onclick = e => { e.preventDefault(); openDetail(a.dataset.open, root.id==='det' ? 'detail' : (root.id==='q' ? 'run' : 'lijst')); });
 }
 function askClaude(c){
   const prompt = `Ik studeer voor de Grotius specialisatieopleiding Onderneming en Aansprakelijkheid (module ${c.module}: ${state.modules[c.module].titel}). Leg mij deze uitspraak helder uit en geef extra context: waarom is hij belangrijk, hoe verhoudt hij zich tot andere uitspraken, en wat moet ik onthouden voor het tentamen?\n\nUitspraak: ${c.verwijzing}\nKern: ${c.kern}\nLeerstuk: ${c.leerstuk}\nRechtsregel: ${c.rechtsregel}\nCitaat: ${c.citaat}`;
   window.open('https://claude.ai/new?q=' + encodeURIComponent(prompt), '_blank', 'noopener,noreferrer');
 }
 
+function locked(){ return Date.now() < (state.lockUntil||0); }
 function renderQ(){
   const q = document.getElementById('q'); state.flipped=false; state.answered=false;
+  state.lockUntil = Date.now() + 350; // voorkomt dat een dubbele tik de volgende kaart direct omdraait
+  window.scrollTo(0,0);
   document.getElementById('p-n').textContent = `${state.idx+1} / ${state.queue.length}`;
   document.getElementById('p-bar').style.width = (state.idx/state.queue.length*100)+'%';
   if (state.mode==='leer') return renderLeer(q);
@@ -457,14 +505,14 @@ function renderQ(){
   }
 }
 function flipNaam(c){
-  if (state.flipped) return; state.flipped=true;
+  if (state.flipped || locked()) return; state.flipped=true;
   document.getElementById('ess').innerHTML = essBlock(c, true); wireExpanders(document.getElementById('q'));
   document.querySelector('#tab-run .acts').innerHTML = `<button class="btn red" id="no">Ken ik nog niet</button><button class="btn green" id="yes">Ken ik</button>`;
   document.getElementById('no').onclick = () => { mark(c.id,false); state.results.push({ids:[c.id],ok:false}); next(); };
   document.getElementById('yes').onclick = () => { mark(c.id,true); state.results.push({ids:[c.id],ok:true}); next(); };
 }
 function flipEss(c){
-  if (state.flipped) return; state.flipped=true;
+  if (state.flipped || locked()) return; state.flipped=true;
   document.getElementById('ess').innerHTML = `<div class="ess"><div class="vraag">Uitspraak</div><div class="naam" style="font-size:28px">${esc(c.naam)}</div><div class="verw">${esc(c.verwijzing)}</div><div class="leer">${esc(c.leerstuk_kort)} · ${esc(c.artikel_kort)}</div>${expanders(c)}</div>`;
   wireExpanders(document.getElementById('q'));
   document.querySelector('#tab-run .acts').innerHTML = `<button class="btn red" id="no">Wist ik niet</button><button class="btn green" id="yes">Wist ik</button>`;
@@ -474,7 +522,7 @@ function flipEss(c){
 function wireMC(c, opts){
   const btns = [...document.querySelectorAll('.opt')];
   btns.forEach(b => b.onclick = () => {
-    if (state.answered) return; state.answered=true;
+    if (state.answered || locked()) return; state.answered=true;
     const ok = b.dataset.id===c.id;
     btns.forEach(x => { if (x.dataset.id===c.id) x.classList.add('ok'); else if (x===b) x.classList.add('bad'); else x.classList.add('dim'); });
     document.getElementById('fb').innerHTML = `<div class="fb ${ok?'ok':'bad'}">${ok?'Goed.':'Niet goed. Het juiste antwoord is '+esc(c.naam)+'.'}</div>`;
@@ -507,11 +555,12 @@ function renderLeer(q){
 document.addEventListener('keydown', e => {
   if (document.getElementById('tab-run').classList.contains('hide')) return;
   if (e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+  if (e.ctrlKey||e.metaKey||e.altKey) return; // Ctrl+1 e.d. zijn browser-sneltoetsen
   const k = e.key;
-  if (k===' ') { e.preventDefault(); const f=document.getElementById('flip'); if(f) f.click(); }
-  if (state.mode==='naam'||state.mode==='ess') { if(k==='1'){const b=document.getElementById('no'); if(b)b.click();} if(k==='2'){const b=document.getElementById('yes'); if(b)b.click();} }
-  if (state.mode.startsWith('mc')||state.mode==='leer') { if('123456'.includes(k)&&k!==''){ const o=document.querySelectorAll('.opt')[+k-1]; if(o&&!state.answered) o.click(); } }
-  if (k==='Enter') { const n=document.getElementById('next')||document.getElementById('check'); if(n) n.click(); }
+  if (k===' ') { const f=document.getElementById('flip'); if(f) { e.preventDefault(); f.click(); } return; }
+  if (state.mode==='naam'||state.mode==='ess') { if(k==='1'){const b=document.getElementById('no'); if(b){e.preventDefault(); b.click();}} if(k==='2'){const b=document.getElementById('yes'); if(b){e.preventDefault(); b.click();}} }
+  if (state.mode.startsWith('mc')||state.mode==='leer') { if(/^[1-6]$/.test(k)){ const o=document.querySelectorAll('.opt')[+k-1]; if(o&&!state.answered){ e.preventDefault(); o.click(); } } }
+  if (k==='Enter') { const n=document.getElementById('next')||document.getElementById('check'); if(n){ e.preventDefault(); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); n.click(); } }
 });
 
 /* ---------- lijst & detail ---------- */
@@ -527,19 +576,26 @@ function renderLijst(){
       items.map(c => `<div class="it" data-id="${c.id}"><span class="dot ${status(c.id)||''}"></span><span class="n">${esc(c.naam)}</span><span class="v">${esc(c.verwijzing_kort)}</span></div>`).join('') + `</div>`;
   });
   box.innerHTML = html || '<p class="muted">Niets gevonden.</p>';
-  box.querySelectorAll('.it').forEach(el => el.onclick = () => openDetail(el.dataset.id));
+  box.querySelectorAll('.it').forEach(el => el.onclick = () => openDetail(el.dataset.id, 'lijst'));
 }
-function openDetail(id){
+/* detail: onthoudt waar je vandaan kwam (lijst, lopende ronde, eindscherm) zodat "Terug" daarheen gaat */
+let detailFrom = 'lijst';
+const BACK_LABEL = { lijst: '← Terug naar lijst', run: '← Terug naar de vraag', end: '← Terug naar resultaat', detail: '← Terug' };
+function openDetail(id, from){
   const c = state.byId[id]; if(!c) return;
-  const s = status(id);
-  document.getElementById('det').innerHTML = `<div class="q">${headMod(c)}<div class="naam">${esc(c.naam)}</div><div class="verw">${esc(c.verwijzing)}</div>${essBlock(c,true)}</div>
-    <div class="acts"><button class="btn ${s==='u'?'red':'ghost'}" id="d-no">Ken ik nog niet</button><button class="btn ${s==='k'?'green':'ghost'}" id="d-yes">Ken ik</button></div>`;
-  wireExpanders(document.getElementById('det'));
-  document.getElementById('d-no').onclick = () => { mark(id,false); openDetail(id); };
-  document.getElementById('d-yes').onclick = () => { mark(id,true); openDetail(id); };
+  if (from && from!=='detail') detailFrom = from;
+  const det = document.getElementById('det');
+  det.innerHTML = `<div class="q">${headMod(c)}<div class="naam">${esc(c.naam)}</div><div class="verw">${esc(c.verwijzing)}</div>${essBlock(c,true)}</div>
+    <div class="acts"><button class="btn" id="d-no">Ken ik nog niet</button><button class="btn" id="d-yes">Ken ik</button></div>`;
+  wireExpanders(det);
+  const paint = () => { const s = status(id); document.getElementById('d-no').className = 'btn ' + (s==='u'?'red':'ghost'); document.getElementById('d-yes').className = 'btn ' + (s==='k'?'green':'ghost'); };
+  paint();
+  document.getElementById('d-no').onclick = () => { mark(id,false); paint(); toast('Gemarkeerd: ken ik nog niet'); };
+  document.getElementById('d-yes').onclick = () => { mark(id,true); paint(); toast('Gemarkeerd: ken ik'); };
+  document.getElementById('det-back').textContent = BACK_LABEL[detailFrom] || BACK_LABEL.lijst;
   showTab('detail');
 }
-document.getElementById('det-back').onclick = () => showTab('lijst');
+document.getElementById('det-back').onclick = () => { const to = detailFrom; detailFrom = 'lijst'; showTab(to==='run' ? 'run' : to==='end' ? 'end' : 'lijst'); };
 
 /* ---------- meer ---------- */
 function renderMeer(){
@@ -555,13 +611,20 @@ function exportCode(){ return btoa(unescape(encodeURIComponent(JSON.stringify({v
 document.getElementById('exp-copy').onclick = async () => { const code = exportCode(); document.getElementById('imp-code').value = code; try { await navigator.clipboard.writeText(code); toast('Code gekopieerd'); } catch(e){ toast('Selecteer en kopieer de code hieronder'); } };
 document.getElementById('exp-share').onclick = async () => {
   const code = exportCode(); const blob = new Blob([code], {type:'text/plain'}); const file = new File([blob], 'grotius-voortgang.txt', {type:'text/plain'});
-  if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) { try { await navigator.share({files:[file], title:'Grotius voortgang'}); return; } catch(e){} }
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'grotius-voortgang.txt'; a.click();
+  if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) {
+    try { await navigator.share({files:[file], title:'Grotius voortgang'}); } catch(e) { /* geannuleerd of niet ondersteund: niets doen */ }
+    return;
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'grotius-voortgang.txt'; document.body.appendChild(a); a.click(); a.remove();
 };
 document.getElementById('imp-go').onclick = () => {
   const code = document.getElementById('imp-code').value.trim(); if(!code) return toast('Geen code');
-  try { const obj = JSON.parse(decodeURIComponent(escape(atob(code)))); let n=0;
-    Object.entries(obj.p||{}).forEach(([id,p]) => { const cur = state.progress[id]; if (!cur || (p.t||0) > (cur.t||0)) { state.progress[id]=p; n++; } });
+  try { const obj = JSON.parse(decodeURIComponent(escape(atob(code.replace(/\s+/g,''))))); let n=0;
+    if (!obj || typeof obj.p !== 'object') throw new Error('geen voortgang');
+    Object.entries(obj.p).forEach(([id,p]) => {
+      if (!state.byId[id] || !p || !['k','u',null].includes(p.s)) return; // alleen bekende uitspraken en geldige statussen
+      const cur = state.progress[id]; if (!cur || (p.t||0) > (cur.t||0)) { state.progress[id]={s:p.s, seen:+p.seen||0, ok:+p.ok||0, bad:+p.bad||0, t:+p.t||0}; n++; }
+    });
     saveProgress(); toast(`${n} beoordelingen geïmporteerd`); renderMeer(); renderTopStat();
   } catch(e){ toast('Code niet herkend'); }
 };
@@ -570,9 +633,30 @@ document.getElementById('reset').onclick = () => { if (confirm('Alle voortgang o
 /* ---------- init ---------- */
 (async function(){
   loadProgress();
-  try { await loadData(); } catch(e) { document.getElementById('tab-start').innerHTML = '<div class="card"><p>Kon cases.json niet laden.</p></div>'; return; }
+  try { await loadData(); } catch(e) {
+    document.querySelectorAll('nav.tabs button').forEach(b => b.disabled = true);
+    document.getElementById('tab-start').innerHTML = '<div class="card"><p>De uitspraken konden niet worden geladen. Controleer je internetverbinding en open de app opnieuw.</p></div>'; return;
+  }
   restoreSel(); renderModChips(); updateSelInfo();
-  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    // Nieuwe versie direct tonen: herlaad één keer zodra een nieuwe service worker het overneemt,
+    // maar niet bij het allereerste bezoek en niet midden in een ronde (dan pas na afloop).
+    const hadController = !!navigator.serviceWorker.controller;
+    let reloaded = false, pending = false;
+    const inRound = () => !document.getElementById('tab-run').classList.contains('hide');
+    const doReload = () => { if (reloaded) return; reloaded = true; location.reload(); };
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController) return;
+      if (inRound()) { pending = true; toast('Nieuwe versie klaar; wordt na deze ronde geladen'); return; }
+      doReload();
+    });
+    // na een ronde alsnog herladen als er een update klaarstond
+    ['end-back','end-again','stop'].forEach(id => document.getElementById(id).addEventListener('click', () => { if (pending) setTimeout(doReload, 400); }, true));
+    navigator.serviceWorker.register('sw.js', {updateViaCache: 'none'}).then(reg => {
+      reg.update().catch(()=>{});
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !inRound()) reg.update().catch(()=>{}); });
+    }).catch(()=>{});
+  }
 })();
 </script>
 </body>
