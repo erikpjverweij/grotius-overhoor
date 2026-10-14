@@ -1,74 +1,43 @@
-# Grotius Overhoor-app
+# Grotius O&A · Rechtspraak-overhoorapp
 
-Overhoorapp voor de Grotius-specialisatieopleiding Onrechtmatige daad & Aansprakelijkheid 2026. Gebouwd als Progressive Web App (PWA) — werkt in elke browser, te installeren op je iPhone-startscherm, werkt offline.
+Overhoorapp voor de verplichte rechtspraak van de Grotius Specialisatieopleiding Onderneming en Aansprakelijkheid 2026. Werkt als PWA op pc en iPhone via GitHub Pages.
 
-## Structuur
+Sinds 14 oktober 2026 beperkt tot rechtspraak. De eerdere kaartenapp (439 kaarten met wetsartikelen, rechtsleer en casus) staat in `archief/2026.10.14 kaarten-app (v1-v6)/`.
 
-| Bestand                  | Wat                                                                 |
-|--------------------------|---------------------------------------------------------------------|
-| `index.html`             | De volledige app (HTML + JS + Tailwind via CDN in één bestand)      |
-| `cards.json`             | Database met alle overhoorkaarten (gebruikt door GitHub Pages)      |
-| `cards.js`               | Zelfde data als JS-variabele (gebruikt bij lokaal openen via file://) |
-| `manifest.webmanifest`   | PWA-metadata (naam, iconen, kleuren)                                |
-| `sw.js`                  | Service worker voor offline gebruik en cards.json-refresh           |
-| `icon-192.png` / `512`   | App-iconen voor op het startscherm                                  |
+## Bron
 
-## Fase 1 — lokaal testen
+`../2026.08.19 Grotius O&A - Rechtspraak per module.docx` is leidend. Dat document bevat per uitspraak: verwijzing (ECLI + vindplaats), kern, feiten, leerstuk, bepalend artikel met wettekst, rechtsregel in eigen woorden, verband met andere uitspraken en het letterlijke citaat. Bijlage A verantwoordt afwijkingen van de syllabi (onder meer gecorrigeerde ECLI's).
 
-1. Open de map `C:\Users\ErikVerweij\Claude\Grotius\Algemeen\overhoor-app\` in Windows Verkenner.
-2. Rechtermuisklik op `index.html` → "Openen met" → kies een browser (Chrome, Edge, Firefox).
-3. Je ziet de app met 10 mock-kaarten over modules 1, 2 en 5.
-4. Test: filter toepassen, "Start overhoor", antwoord tonen, "Ken ik" / "Herhalen" klikken, terug naar hoofdmenu.
+`generator/parse_rechtspraak.py` leest dat document en schrijft `cases.json` en `cases.js`. Na een wijziging in het document: script draaien, cache-versie in `sw.js` verhogen, committen en pushen.
 
-> Let op: de service worker (offline-ondersteuning) werkt pas als de app via `http(s)://` draait, niet via `file:///`. Voor lokaal testen is dat geen probleem — de app werkt prima lokaal, alleen offline-cache staat nog uit. Kaarten worden lokaal geladen uit `cards.js` (JS-variabele), en op GitHub Pages uit `cards.json` (fetch). De generator schrijft beide altijd tegelijk.
+## Bestanden
 
-## Fase 2 — op GitHub Pages zetten
+| Bestand | Functie |
+|---|---|
+| `index.html` | De app (één bestand: opmaak, logica, vijf oefenvormen) |
+| `cases.json` | 214 uitspraken, 20 modules; wordt network-first geladen |
+| `cases.js` | Zelfde data als JS-variabele, voor gebruik vanaf `file://` en als offline-fallback; bevat ook de mapnamen van de syllabi voor de knop "Open syllabus" |
+| `sw.js` | Service worker. `CACHE_NAME` verhogen bij elke wijziging aan index.html |
+| `manifest.webmanifest`, `icon-*.png` | PWA-configuratie |
 
-### Eenmalig
+## Oefenvormen
 
-1. Ga naar https://github.com/new terwijl je ingelogd bent als **erikpjverweij**.
-2. Repository-naam: `grotius-overhoor`. Zet op **Public** (anders werkt Pages niet op een gratis account). "Add README" uit laten staan.
-3. Open PowerShell of Git Bash in deze map en voer uit:
+1. Naam → essentie: naam in beeld, klik "Essentie weergeven", beoordeel jezelf met "Ken ik" of "Ken ik nog niet".
+2. Essentie → naam: rechtsregel in beeld, bedenk de naam, klik "Naam weergeven".
+3. Meerkeuze naam: rechtsregel in beeld, vier namen.
+4. Meerkeuze essentie: naam in beeld, vier rechtsregels.
+5. Leerstuk → uitspraken: wetsartikel in beeld, kies alle uitspraken die erbij horen (zes opties, twee tot drie juist).
 
-```bash
-cd "C:\Users\ErikVerweij\Claude\Grotius\Algemeen\overhoor-app"
-git init
-git add .
-git commit -m "Fase 1: app-skelet met mock-data"
-git branch -M main
-git remote add origin https://github.com/erikpjverweij/grotius-overhoor.git
-git push -u origin main
-```
+Afleiders bij meerkeuze komen eerst uit het verband-blok van de uitspraak, dan uit dezelfde module, dan uit uitspraken over hetzelfde artikel. Uitspraken die in twee modules staan, verschijnen nooit als afleider van zichzelf.
 
-4. In GitHub: **Settings → Pages → Source → Deploy from branch → `main` / root → Save**.
-5. Na ~1 minuut staat de app op `https://erikpjverweij.github.io/grotius-overhoor/`.
+Bij elke essentie zijn uitklapbaar: feiten, letterlijk citaat, verband, wettekst, bron (met link naar de syllabus-pdf op de juiste pagina; werkt alleen op de pc waar de Grotius-map staat) en een knop "Vraag Claude" die claude.ai opent met de uitspraak als vraag.
 
-### iPhone-installatie
+## Voortgang
 
-1. Open de URL in **Safari** op je iPhone.
-2. Druk op de deelknop (vierkantje met pijltje omhoog).
-3. Scrol omlaag → "Zet op beginscherm".
-4. De app staat nu als icoon op je startscherm en opent zonder adresbalk, als een echte app.
+Per uitspraak: ken ik / ken ik nog niet / nieuw. Opgeslagen in de browser van het apparaat (localStorage). Uitspraken met "ken ik nog niet" komen in een ronde drie keer zo vaak als gekende uitspraken; nieuwe twee keer zo vaak.
 
-### Updates
+Tab "Meer": voortgang per module, en export/import als code om voortgang tussen pc en iPhone over te zetten. Import voegt samen; per uitspraak wint de nieuwste beoordeling.
 
-Elke keer als ik (of jij) de app of `cards.json` bijwerkt:
+## Publiceren
 
-```bash
-cd "C:\Users\ErikVerweij\Claude\Grotius\Algemeen\overhoor-app"
-git add .
-git commit -m "Nieuwe kaarten: module X"
-git push
-```
-
-GitHub Pages deployt automatisch binnen een minuut. De app laadt `cards.json` "network first" — je ziet nieuwe kaarten zodra je online bent, maar offline kun je blijven werken met de versie die het laatst gecached was.
-
-## Fase 3 en verder
-
-Zie de hoofdplanning in het gesprek. Kaartengeneratie uit PDF-syllabi gebeurt in een apart Python-script in `Algemeen/overhoor-generator/` (nog aan te maken in Fase 3).
-
-## Privacy
-
-- Er is geen backend, geen login, geen tracking.
-- Voortgang ("ken ik" / "herhalen") staat alleen lokaal in je browser (`localStorage`). Wissel je van apparaat, dan begin je daar met een blanco voortgang.
-- GitHub-repo is public (nodig voor gratis Pages). Als je bang bent dat anderen de kaartenset vinden: die bevat alleen korte citaten uit publieke juridische bronnen en de syllabi zijn leermateriaal dat in de opleiding met alle deelnemers wordt gedeeld. Geen persoonlijke of vertrouwelijke informatie.
+GitHub Desktop → repository overhoor-app → wijzigingen controleren → Summary invullen → Commit to main → Push origin. Na ongeveer een minuut staat de nieuwe versie online; op de iPhone de app sluiten en opnieuw openen.

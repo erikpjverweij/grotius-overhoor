@@ -10,1092 +10,570 @@
 <meta name="color-scheme" content="dark">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Grotius O&amp;A</title>
-
-<!-- Fonts -->
+<title>Grotius O&amp;A · Rechtspraak</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
-<!-- Kaarten als JS-variabele (werkt ook vanaf file:// waar fetch() faalt) -->
-<script src="cards.js" onerror="window.__cardsJsMissing=true"></script>
-
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="cases.js" onerror="window.__casesJsMissing=true"></script>
 <style>
-  /* ========================================================================
-     Grotius Overhoor — Dark theme
-     ======================================================================== */
-  :root {
-    --bg:           #0a0a0c;
-    --bg-elevated: #111114;
-    --surface:      #16161b;
-    --surface-hi:   #1c1c22;
-    --border:       #26262e;
-    --border-hi:    #34343e;
-
-    --text:         #f3f3f7;
-    --text-2:       #a8a8b3;
-    --text-3:       #6c6c78;
-    --text-4:       #45454f;
-
-    --accent:       #d4b878;          /* warm goud */
-    --accent-soft:  rgba(212,184,120,0.10);
-    --accent-line:  rgba(212,184,120,0.25);
-
-    --success:      #4ade80;
-    --success-bg:   rgba(74,222,128,0.08);
-    --warn:         #fbbf24;
-    --warn-bg:      rgba(251,191,36,0.08);
-    --info-bg:      rgba(168,168,179,0.06);
-
-    --radius-sm: 10px;
-    --radius:    14px;
-    --radius-lg: 20px;
-  }
-
-  * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
-  html, body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    font-size: 15px;
-    line-height: 1.55;
-    font-feature-settings: 'cv11', 'ss01', 'ss03';
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-    min-height: 100vh;
-  }
-
-  /* Subtiel verloop voor diepte */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(212,184,120,0.04), transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .container {
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 24px 20px;
-    padding-top: max(24px, env(safe-area-inset-top));
-    padding-bottom: max(48px, env(safe-area-inset-bottom));
-    position: relative;
-    z-index: 1;
-  }
-
-  /* Typografie */
-  .display-serif {
-    font-family: 'Instrument Serif', Georgia, serif;
-    font-weight: 400;
-    letter-spacing: -0.01em;
-  }
-
-  h1.app-title {
-    font-family: 'Instrument Serif', Georgia, serif;
-    font-size: 38px;
-    font-weight: 400;
-    letter-spacing: -0.02em;
-    margin: 0 0 4px;
-    color: var(--text);
-  }
-  h1.app-title em {
-    font-style: italic;
-    color: var(--accent);
-  }
-  .app-subtitle {
-    font-size: 13px;
-    color: var(--text-3);
-    margin: 0;
-    letter-spacing: 0.02em;
-  }
-
-  .app-footer {
-    text-align: center;
-    font-size: 11px;
-    color: var(--text-3);
-    padding: 32px 16px 24px;
-    letter-spacing: 0.04em;
-  }
-
-  .section-label {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-3);
-    margin: 0 0 12px;
-  }
-
-  /* Card — surface */
-  .surface {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 14px;
-  }
-
-  /* Hero stats */
-  .stat-hero {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 16px;
-  }
-  .stat-hero .big {
-    font-family: 'Instrument Serif', Georgia, serif;
-    font-size: 56px;
-    line-height: 1;
-    color: var(--text);
-    font-weight: 400;
-    letter-spacing: -0.02em;
-  }
-  .stat-hero .big-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--text-3);
-    margin-top: 6px;
-  }
-  .stat-hero .right { text-align: right; font-size: 13px; line-height: 1.7; }
-  .stat-hero .right .pill {
-    display: inline-block;
-    padding: 1px 8px;
-    border-radius: 999px;
-    font-weight: 500;
-    font-size: 12px;
-    margin-left: 4px;
-  }
-  .pill-known  { color: var(--success); background: var(--success-bg); }
-  .pill-repeat { color: var(--warn);    background: var(--warn-bg); }
-  .pill-new    { color: var(--text-2);  background: var(--info-bg); }
-
-  .progress-track {
-    width: 100%;
-    height: 3px;
-    background: var(--border);
-    border-radius: 999px;
-    margin-top: 18px;
-    overflow: hidden;
-  }
-  .progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), #efd9a6);
-    border-radius: 999px;
-    transition: width 0.4s cubic-bezier(0.2, 0.8, 0.3, 1);
-  }
-
-  /* Form controls */
-  label.field { display: block; margin-bottom: 14px; }
-  label.field:last-child { margin-bottom: 0; }
-  label.field > .label-text {
-    display: block;
-    font-size: 11px;
-    color: var(--text-3);
-    margin-bottom: 6px;
-    letter-spacing: 0.04em;
-  }
-
-  select, .select {
-    width: 100%;
-    background: var(--bg-elevated);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 11px 14px;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 500;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'><path d='M1 1.5L6 6.5L11 1.5' stroke='%236c6c78' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    padding-right: 38px;
-    cursor: pointer;
-    transition: border-color 0.15s ease;
-  }
-  select:hover { border-color: var(--border-hi); }
-  select:focus { outline: none; border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-soft); }
-
-  .toggles {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    margin-top: 4px;
-  }
-  .toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    font-size: 13px;
-    color: var(--text-2);
-    user-select: none;
-  }
-  .toggle input[type="checkbox"] {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 16px; height: 16px;
-    border: 1.5px solid var(--border-hi);
-    border-radius: 4px;
-    background: var(--bg-elevated);
-    cursor: pointer;
-    position: relative;
-    transition: all 0.15s ease;
-  }
-  .toggle input[type="checkbox"]:checked {
-    background: var(--accent);
-    border-color: var(--accent);
-  }
-  .toggle input[type="checkbox"]:checked::after {
-    content: '';
-    position: absolute;
-    left: 4px; top: 1px;
-    width: 5px; height: 9px;
-    border: solid var(--bg);
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-  }
-  .toggle:hover { color: var(--text); }
-
-  .filter-count {
-    margin-top: 16px;
-    font-size: 12px;
-    color: var(--text-3);
-    letter-spacing: 0.02em;
-  }
-
-  /* Buttons */
-  button {
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    border: none;
-    transition: all 0.15s ease;
-  }
-  button:active { transform: scale(0.985); }
-
-  .btn-primary {
-    width: 100%;
-    background: var(--accent);
-    color: #1a1408;
-    padding: 16px 20px;
-    border-radius: var(--radius);
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    box-shadow: 0 8px 24px -10px rgba(212,184,120,0.6), inset 0 1px 0 rgba(255,255,255,0.15);
-  }
-  .btn-primary:hover { background: #e0c890; }
-  .btn-primary:disabled {
-    background: var(--surface);
-    color: var(--text-4);
-    box-shadow: none;
-    cursor: not-allowed;
-  }
-
-  .btn-success {
-    background: var(--success-bg);
-    color: var(--success);
-    padding: 14px;
-    border: 1px solid rgba(74,222,128,0.20);
-    border-radius: var(--radius-sm);
-    font-weight: 600;
-  }
-  .btn-success:hover { background: rgba(74,222,128,0.14); border-color: rgba(74,222,128,0.30); }
-
-  .btn-warn {
-    background: var(--warn-bg);
-    color: var(--warn);
-    padding: 14px;
-    border: 1px solid rgba(251,191,36,0.20);
-    border-radius: var(--radius-sm);
-    font-weight: 600;
-  }
-  .btn-warn:hover { background: rgba(251,191,36,0.14); border-color: rgba(251,191,36,0.30); }
-
-  .btn-ghost {
-    background: transparent;
-    color: var(--text-3);
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .btn-ghost:hover { color: var(--text); background: var(--surface); }
-
-  .btn-context {
-    width: 100%;
-    background: transparent;
-    color: var(--text-2);
-    padding: 12px 16px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 8px;
-    transition: border-color 0.15s, color 0.15s, background 0.15s;
-  }
-  .btn-context:hover {
-    color: var(--accent);
-    border-color: var(--accent);
-    background: rgba(212,184,120,0.05);
-  }
-  .btn-context svg { opacity: 0.7; }
-
-  .btn-link {
-    background: transparent;
-    color: var(--text-3);
-    font-size: 12px;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    padding: 4px 8px;
-  }
-  .btn-link:hover { color: var(--warn); }
-
-  /* Module-progress lijst */
-  .module-row {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    margin-bottom: 8px;
-  }
-  .module-row .row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .module-row .name {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-2);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .module-row .count {
-    font-size: 11px;
-    color: var(--text-3);
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .module-row .track {
-    height: 2px;
-    background: var(--border);
-    border-radius: 999px;
-    margin-top: 8px;
-    overflow: hidden;
-  }
-  .module-row .track .bar {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 999px;
-  }
-
-  /* === Card view === */
-  .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 18px;
-  }
-  .card-progress-track {
-    height: 2px;
-    background: var(--border);
-    border-radius: 999px;
-    margin-bottom: 24px;
-    overflow: hidden;
-  }
-  .card-progress-bar {
-    height: 100%;
-    background: var(--accent);
-    transition: width 0.3s ease;
-  }
-
-  .chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 18px;
-  }
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-  }
-  .chip-module { color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent-line); }
-  .chip-type   { color: var(--text-2); background: var(--surface-hi); border: 1px solid var(--border); text-transform: capitalize; }
-  .chip-status-known { color: var(--success); background: var(--success-bg); border: 1px solid rgba(74,222,128,0.20); }
-  .chip-status-repeat { color: var(--warn); background: var(--warn-bg); border: 1px solid rgba(251,191,36,0.20); }
-
-  .card-date {
-    font-size: 11px;
-    color: var(--text-3);
-    margin: 0 0 10px;
-    letter-spacing: 0.04em;
-  }
-
-  .card-question {
-    font-family: 'Instrument Serif', Georgia, serif;
-    font-size: 26px;
-    line-height: 1.3;
-    font-weight: 400;
-    letter-spacing: -0.01em;
-    color: var(--text);
-    margin: 0 0 8px;
-  }
-
-  .answer-section {
-    margin-top: 28px;
-    border-top: 1px solid var(--border);
-    padding-top: 24px;
-    animation: fadeIn 0.3s ease-out;
-  }
-
-  .answer-block { margin-bottom: 22px; }
-  .answer-block:last-child { margin-bottom: 0; }
-  .answer-label {
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--accent);
-    font-weight: 600;
-    margin: 0 0 6px;
-  }
-  .answer-text {
-    font-size: 15px;
-    color: var(--text);
-    line-height: 1.6;
-    margin: 0;
-  }
-  .answer-context {
-    font-size: 14px;
-    color: var(--text-2);
-    line-height: 1.6;
-    margin: 0;
-  }
-
-  blockquote.citaat {
-    font-family: 'Instrument Serif', Georgia, serif;
-    font-style: italic;
-    font-size: 17px;
-    line-height: 1.5;
-    color: var(--text);
-    border-left: 2px solid var(--accent);
-    padding: 4px 0 4px 16px;
-    margin: 0;
-  }
-  .bron {
-    font-size: 11px;
-    color: var(--text-3);
-    margin: 6px 0 0;
-    letter-spacing: 0.02em;
-  }
-
-  .vindplaats {
-    font-family: 'JetBrains Mono', ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 12px;
-    color: var(--text-2);
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 8px 10px;
-    word-break: break-word;
-  }
-
-  .reveal-spacer { margin-top: 28px; }
-
-  .rating-grid {
-    margin-top: 16px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  .skip-btn {
-    display: block;
-    width: 100%;
-    background: transparent;
-    color: var(--text-3);
-    margin-top: 12px;
-    padding: 10px;
-    font-size: 13px;
-  }
-  .skip-btn:hover { color: var(--text); }
-
-  /* End view */
-  .end-celebration {
-    text-align: center;
-    padding: 60px 20px;
-  }
-  .end-emoji {
-    font-size: 56px;
-    margin-bottom: 16px;
-    opacity: 0.9;
-  }
-  .end-title {
-    font-family: 'Instrument Serif', Georgia, serif;
-    font-size: 32px;
-    margin: 0 0 8px;
-    letter-spacing: -0.01em;
-  }
-  .end-summary {
-    color: var(--text-2);
-    margin: 0 0 32px;
-    font-size: 14px;
-  }
-
-  .footer-meta {
-    text-align: center;
-    margin-top: 36px;
-    font-size: 11px;
-    color: var(--text-4);
-    letter-spacing: 0.04em;
-  }
-
-  .hide { display: none !important; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .card-fade { animation: fadeIn 0.25s ease-out; }
-
-  /* Toegankelijkheid: focus rings */
-  button:focus-visible,
-  select:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
+:root{--bg:#0a0a0c;--bg2:#111114;--surface:#16161b;--surface2:#1d1d24;--border:#26262e;--border2:#34343f;
+--text:#ececf1;--text2:#a3a3b0;--text3:#6b6b78;--accent:#c9a961;--accent2:#e3c67f;--green:#4fb286;--red:#d9626b;--blue:#6ea8dc;
+--radius:14px;--font:'Inter',system-ui,-apple-system,sans-serif;--serif:'Instrument Serif',Georgia,serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;min-height:100%}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+a{color:var(--blue)}
+.wrap{max-width:720px;margin:0 auto;padding:16px 16px 40px}
+header.app{display:flex;align-items:flex-end;justify-content:space-between;padding:18px 0 14px;border-bottom:1px solid var(--border);margin-bottom:16px}
+h1.app-title{font-family:var(--serif);font-weight:400;font-size:28px;letter-spacing:-.01em;line-height:1}
+h1.app-title em{font-style:italic;color:var(--accent)}
+.app-subtitle{color:var(--text3);font-size:12px;margin-top:6px;letter-spacing:.04em;text-transform:uppercase}
+nav.tabs{display:flex;gap:6px}
+nav.tabs button{padding:8px 12px;border-radius:999px;font-size:13px;color:var(--text2);background:var(--surface);border:1px solid var(--border)}
+nav.tabs button.active{color:var(--bg);background:var(--accent);border-color:var(--accent);font-weight:600}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+.card+.card{margin-top:12px}
+h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;font-weight:600}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mode{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:left;transition:.15s}
+.mode .t{font-weight:600;font-size:15px;margin-bottom:4px}
+.mode .d{color:var(--text2);font-size:12px;line-height:1.4}
+.mode.active{border-color:var(--accent);background:#1f1b12}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:7px 11px;border-radius:999px;font-size:13px;border:1px solid var(--border2);color:var(--text2);background:var(--surface2);display:flex;align-items:center;gap:6px}
+.chip.on{border-color:var(--accent);color:var(--text);background:#1f1b12}
+.chip small{color:var(--text3);font-size:11px}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:var(--text3)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seg{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.seg button{padding:9px 13px;font-size:13px;color:var(--text2)}
+.seg button.on{background:var(--accent);color:var(--bg);font-weight:600}
+.btn{padding:14px 18px;border-radius:12px;font-weight:600;font-size:15px;background:var(--accent);color:var(--bg);width:100%}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border2)}
+.btn.sm{padding:9px 13px;font-size:13px;width:auto}
+.btn.green{background:var(--green);color:#06120c}.btn.red{background:var(--red);color:#1a0608}
+.muted{color:var(--text3);font-size:12px;line-height:1.5}
+.stat{display:flex;gap:14px;font-size:13px;color:var(--text2)}
+.stat b{color:var(--text)}
+.bar{height:6px;border-radius:3px;background:var(--surface2);overflow:hidden;display:flex;margin-top:8px}
+.bar i{display:block;height:100%}
+.bar .k{background:var(--green)}.bar .u{background:var(--red)}.bar .n{background:var(--border2)}
+/* oefenkaart */
+.prog{display:flex;justify-content:space-between;align-items:center;color:var(--text3);font-size:12px;margin-bottom:10px}
+.prog .pb{flex:1;margin:0 12px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.prog .pb i{display:block;height:100%;background:var(--accent)}
+.q{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px 20px;min-height:200px}
+.q .mod{color:var(--text3);font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+.q .naam{font-family:var(--serif);font-size:34px;line-height:1.1;letter-spacing:-.01em}
+.q .verw{color:var(--text2);font-size:13px;margin-top:10px}
+.q .vraag{font-size:14px;color:var(--accent);letter-spacing:.04em;text-transform:uppercase;font-weight:600;margin-bottom:12px}
+.q .regel{font-size:17px;line-height:1.55}
+.q .kern{color:var(--text2);font-size:13px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.q .leer{color:var(--accent2);font-size:13px;margin-top:6px}
+.ess{margin-top:16px;padding-top:16px;border-top:1px dashed var(--border2)}
+.ess .regel{font-size:17px;line-height:1.55}
+.exp{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+.exp button{padding:7px 11px;border-radius:999px;font-size:12px;border:1px solid var(--border2);color:var(--text2);background:var(--surface2)}
+.exp button.on{color:var(--text);border-color:var(--accent)}
+.panel{margin-top:12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px 14px;font-size:14px;line-height:1.55;color:var(--text2);white-space:pre-line}
+.panel.cit{font-family:var(--serif);font-size:16px;color:var(--text);font-style:italic}
+.panel b{color:var(--text)}
+.panel .vlink{display:block;margin-top:6px}
+.verb{margin-top:12px;background:#15181f;border:1px solid #233;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.5;color:var(--text2)}
+.verb b{color:var(--blue)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.acts .one{grid-column:1/-1}
+.opts{display:grid;gap:8px;margin-top:14px}
+.opt{text-align:left;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:13px 14px;font-size:15px;line-height:1.4;display:flex;gap:10px;align-items:flex-start}
+.opt .k{flex:0 0 22px;height:22px;border-radius:50%;border:1px solid var(--border2);font-size:12px;display:flex;align-items:center;justify-content:center;color:var(--text3)}
+.opt.sel{border-color:var(--accent)}
+.opt.ok{border-color:var(--green);background:#0f1f18}.opt.ok .k{background:var(--green);color:#06120c;border-color:var(--green)}
+.opt.bad{border-color:var(--red);background:#221215}.opt.bad .k{background:var(--red);color:#fff;border-color:var(--red)}
+.opt.dim{opacity:.45}
+.opt .sub{display:block;color:var(--text3);font-size:12px;margin-top:3px}
+.fb{margin-top:12px;font-weight:600;font-size:15px}
+.fb.ok{color:var(--green)}.fb.bad{color:var(--red)}
+.list .it{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.list .it:last-child{border-bottom:0}
+.list .dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px;background:var(--border2)}
+.list .dot.k{background:var(--green)}.list .dot.u{background:var(--red)}
+.list .n{flex:1;font-size:15px}
+.list .v{color:var(--text3);font-size:12px}
+.modhead{display:flex;justify-content:space-between;align-items:baseline;margin:18px 0 6px}
+.modhead .t{font-weight:600;font-size:14px}
+.modhead .c{color:var(--text3);font-size:12px}
+.kbd{display:inline-block;padding:1px 6px;border:1px solid var(--border2);border-radius:5px;font-size:11px;color:var(--text3);margin-left:4px}
+textarea.code{width:100%;min-height:90px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text2);font-size:12px;padding:10px;font-family:ui-monospace,monospace}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:9}
+.toast.show{opacity:1}
+.app-footer{text-align:center;font-size:11px;color:var(--text3);padding:32px 16px 24px;letter-spacing:.04em}
+.hide{display:none!important}
+@media (max-width:420px){.modes{grid-template-columns:1fr}.q .naam{font-size:28px}}
+@media (hover:hover){.mode:hover,.opt:hover{border-color:var(--border2);filter:brightness(1.08)}}
 </style>
 </head>
 <body>
-
-<!-- ===================== HOOFDSCHERM ===================== -->
-<main id="home" class="container">
-  <header style="margin-bottom: 28px;">
+<div class="wrap">
+<header class="app">
+  <div>
     <h1 class="app-title">Grotius <em>O&amp;A</em></h1>
-    <p class="app-subtitle">Onderneming en aansprakelijkheid · 2026</p>
-  </header>
-
-  <!-- Voortgangstegel -->
-  <section class="surface" style="padding: 24px;">
-    <div class="stat-hero">
-      <div>
-        <div class="big" id="stat-total">—</div>
-        <div class="big-label">Kaarten in set</div>
-      </div>
-      <div class="right">
-        <div><span id="stat-known">0</span><span class="pill pill-known">ken ik</span></div>
-        <div><span id="stat-repeat">0</span><span class="pill pill-repeat">herhalen</span></div>
-        <div><span id="stat-new">0</span><span class="pill pill-new">nieuw</span></div>
-      </div>
-    </div>
-    <div class="progress-track">
-      <div id="stat-bar" class="progress-bar" style="width: 0%"></div>
-    </div>
-  </section>
-
-  <!-- Filters -->
-  <section class="surface">
-    <p class="section-label">Filter</p>
-
-    <label class="field">
-      <span class="label-text">Module / dagdeel</span>
-      <select id="filter-module">
-        <option value="">Alle modules</option>
-      </select>
-    </label>
-
-    <label class="field">
-      <span class="label-text">Type</span>
-      <select id="filter-type">
-        <option value="">Alle types</option>
-        <option value="leerstuk">Leerstukken</option>
-        <option value="arrest">Arresten</option>
-        <option value="artikel">Wetsartikelen</option>
-        <option value="term">Termen</option>
-      </select>
-    </label>
-
-    <label class="field">
-      <span class="label-text">Selectie</span>
-      <select id="filter-status">
-        <option value="all">Alle kaarten</option>
-        <option value="new">Alleen nieuw (nog niet beoordeeld)</option>
-        <option value="repeat">Alleen 'herhalen'</option>
-        <option value="not-known">Nieuw + herhalen (default voor studie)</option>
-        <option value="known">Alleen 'ken ik' (controletest)</option>
-      </select>
-    </label>
-
-    <div class="toggles">
-      <label class="toggle">
-        <input type="checkbox" id="opt-shuffle" checked>
-        <span>Shuffle</span>
-      </label>
-      <label class="toggle">
-        <input type="checkbox" id="opt-weak-first">
-        <span>Zwakke kaarten eerst</span>
-      </label>
-    </div>
-
-    <div id="filter-count" class="filter-count">— kaarten in selectie</div>
-  </section>
-
-  <!-- Start-knop -->
-  <button id="start-btn" class="btn-primary" style="margin-top: 6px;">
-    Start overhoor
-  </button>
-
-  <!-- Voortgang per module -->
-  <section style="margin-top: 32px;">
-    <p class="section-label">Per module</p>
-    <div id="module-progress"></div>
-  </section>
-
-  <div class="footer-meta">
-    <button id="reset-btn" class="btn-link">Voortgang wissen</button>
-    <div id="meta-info" style="margin-top: 10px;">—</div>
+    <p class="app-subtitle">Rechtspraak · 214 uitspraken · 2026</p>
   </div>
-</main>
+  <nav class="tabs">
+    <button data-tab="start" class="active">Oefenen</button>
+    <button data-tab="lijst">Lijst</button>
+    <button data-tab="meer">Meer</button>
+  </nav>
+</header>
 
-<!-- ===================== KAARTSCHERM ===================== -->
-<main id="card-view" class="container hide">
-  <div class="card-header">
-    <button id="back-btn" class="btn-ghost">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-      Hoofdmenu
-    </button>
-    <span style="font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums;" id="card-progress">—</span>
-  </div>
-
-  <div class="card-progress-track">
-    <div id="card-progress-bar" class="card-progress-bar" style="width: 0%"></div>
-  </div>
-
-  <article id="card-container" class="surface card-fade" style="padding: 24px;">
-    <div class="chips">
-      <span class="chip chip-module" id="chip-module">Module —</span>
-      <span class="chip chip-type" id="chip-type">type</span>
-      <span class="chip chip-status-repeat hide" id="chip-status">herhalen</span>
+<!-- ============ START ============ -->
+<section id="tab-start">
+  <div class="card">
+    <h2>Oefenvorm</h2>
+    <div class="modes" id="modes">
+      <button class="mode active" data-mode="naam"><div class="t">Naam → essentie</div><div class="d">Je ziet de naam. Klik "Essentie weergeven" en beoordeel jezelf.</div></button>
+      <button class="mode" data-mode="ess"><div class="t">Essentie → naam</div><div class="d">Je ziet de rechtsregel. Bedenk de naam, klik "Naam weergeven".</div></button>
+      <button class="mode" data-mode="mc-naam"><div class="t">Meerkeuze: kies de naam</div><div class="d">Rechtsregel in beeld, vier namen, één juist.</div></button>
+      <button class="mode" data-mode="mc-ess"><div class="t">Meerkeuze: kies de essentie</div><div class="d">Naam in beeld, vier rechtsregels, één juist.</div></button>
+      <button class="mode" data-mode="leer"><div class="t">Leerstuk → uitspraken</div><div class="d">Een wetsartikel in beeld. Welke uitspraken horen erbij? Meerdere juist.</div></button>
     </div>
-
-    <p class="card-date" id="card-date">—</p>
-
-    <h2 class="card-question" id="card-question">Vraag laden…</h2>
-
-    <div id="answer-section" class="answer-section hide">
-      <div class="answer-block">
-        <p class="answer-label">Antwoord</p>
-        <p class="answer-text" id="card-answer">—</p>
-      </div>
-      <div class="answer-block" id="citaat-block">
-        <p class="answer-label">Citaat uit syllabus</p>
-        <blockquote class="citaat" id="card-citaat">—</blockquote>
-        <p class="bron" id="card-bron">—</p>
-      </div>
-      <div class="answer-block" id="context-block">
-        <p class="answer-label">Context</p>
-        <p class="answer-context" id="card-context">—</p>
-      </div>
-      <div class="answer-block" id="vindplaats-block">
-        <p class="answer-label">Vindplaats</p>
-        <p class="vindplaats" id="card-vindplaats">—</p>
-      </div>
-
-      <button id="context-btn" class="btn-context" type="button">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        Vraag Claude om extra context
-      </button>
-    </div>
-
-    <div class="reveal-spacer">
-      <button id="reveal-btn" class="btn-primary">Antwoord weergeven</button>
-
-      <div id="rating-buttons" class="rating-grid hide">
-        <button id="repeat-btn" class="btn-warn">Herhalen</button>
-        <button id="known-btn" class="btn-success">Ken ik</button>
-      </div>
-      <button id="skip-btn" class="skip-btn hide">Overslaan zonder beoordelen →</button>
-    </div>
-  </article>
-</main>
-
-<!-- ===================== EINDSCHERM ===================== -->
-<main id="end-view" class="container hide">
-  <div class="end-celebration">
-    <div class="end-emoji">✦</div>
-    <h2 class="end-title">Sessie afgerond</h2>
-    <p class="end-summary" id="end-summary">—</p>
-    <button id="end-back-btn" class="btn-primary">Terug naar hoofdmenu</button>
   </div>
-</main>
+  <div class="card">
+    <h2>Modules <button class="btn ghost sm" id="mod-all" style="float:right;margin-top:-6px">Alles aan/uit</button></h2>
+    <div class="chips" id="mod-chips"></div>
+  </div>
+  <div class="card">
+    <h2>Selectie</h2>
+    <div class="row" style="margin-bottom:10px">
+      <div class="seg" id="seg-status"><button data-v="alle" class="on">Alle</button><button data-v="nieuw">Nog nooit gezien</button><button data-v="u">Ken ik nog niet</button><button data-v="k">Ken ik</button></div>
+    </div>
+    <div class="row">
+      <div class="seg" id="seg-n"><button data-v="10">10</button><button data-v="25" class="on">25</button><button data-v="50">50</button><button data-v="0">Alles</button></div>
+      <span class="muted" id="sel-info"></span>
+    </div>
+    <p class="muted" style="margin-top:10px">Uitspraken die je "ken ik nog niet" gaf, komen vaker terug dan uitspraken die je kent.</p>
+  </div>
+  <div class="card">
+    <div class="stat" id="stat-top"></div>
+    <div class="bar" id="bar-top"></div>
+  </div>
+  <div style="margin-top:14px"><button class="btn" id="start">Start</button></div>
+</section>
+
+<!-- ============ OEFENEN ============ -->
+<section id="tab-run" class="hide">
+  <div class="prog"><span id="p-n"></span><div class="pb"><i id="p-bar" style="width:0"></i></div><button class="btn ghost sm" id="stop">Stop</button></div>
+  <div id="q"></div>
+</section>
+
+<!-- ============ EINDE ============ -->
+<section id="tab-end" class="hide">
+  <div class="card" style="text-align:center;padding:30px 20px">
+    <div class="muted" style="letter-spacing:.06em;text-transform:uppercase">Sessie klaar</div>
+    <div style="font-family:var(--serif);font-size:44px;margin:10px 0" id="end-score"></div>
+    <div class="muted" id="end-detail"></div>
+    <div class="acts" style="margin-top:20px"><button class="btn ghost" id="end-again">Nog een ronde</button><button class="btn" id="end-back">Terug</button></div>
+  </div>
+  <div class="card" id="end-list"></div>
+</section>
+
+<!-- ============ LIJST ============ -->
+<section id="tab-lijst" class="hide">
+  <div class="card">
+    <div class="row">
+      <div class="seg" id="seg-lf"><button data-v="alle" class="on">Alle</button><button data-v="u">Ken ik nog niet</button><button data-v="k">Ken ik</button><button data-v="nieuw">Nieuw</button></div>
+      <input id="zoek" placeholder="Zoek naam, artikel, leerstuk…" style="flex:1;min-width:160px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:9px 12px;color:var(--text);font-size:14px">
+    </div>
+  </div>
+  <div id="lijst" class="list"></div>
+</section>
+
+<!-- ============ DETAIL ============ -->
+<section id="tab-detail" class="hide">
+  <button class="btn ghost sm" id="det-back" style="margin-bottom:12px">← Terug naar lijst</button>
+  <div id="det"></div>
+</section>
+
+<!-- ============ MEER ============ -->
+<section id="tab-meer" class="hide">
+  <div class="card">
+    <h2>Voortgang per module</h2>
+    <div id="meer-stats"></div>
+  </div>
+  <div class="card">
+    <h2>Voortgang meenemen naar ander apparaat</h2>
+    <p class="muted" style="margin-bottom:10px">Je voortgang staat op dit apparaat. Kopieer de code hieronder en plak die op je andere apparaat (pc ↔ iPhone). Importeren voegt samen: de nieuwste beoordeling per uitspraak wint.</p>
+    <div class="acts"><button class="btn ghost" id="exp-copy">Kopieer code</button><button class="btn ghost" id="exp-share">Deel / download</button></div>
+    <textarea class="code" id="imp-code" placeholder="Plak hier een code van je andere apparaat…" style="margin-top:12px"></textarea>
+    <div class="acts"><button class="btn" id="imp-go" class="one">Importeren</button><button class="btn ghost" id="reset">Alles wissen</button></div>
+  </div>
+  <div class="card">
+    <h2>Sneltoetsen (pc)</h2>
+    <p class="muted">Spatie <span class="kbd">␣</span> omdraaien · <span class="kbd">1</span> ken ik nog niet · <span class="kbd">2</span> ken ik · <span class="kbd">1–4</span> meerkeuze · <span class="kbd">Enter</span> volgende</p>
+  </div>
+  <div class="card">
+    <h2>Bron</h2>
+    <p class="muted" id="bron-info"></p>
+  </div>
+</section>
+
+<footer class="app-footer">© 2026 Erik Verweij · Alle rechten voorbehouden</footer>
+</div>
+<div class="toast" id="toast"></div>
 
 <script>
-/* =========================================================================
-   Grotius Overhoor — client-side logica
-   ========================================================================= */
-
-const STORAGE_KEY = 'grotius-overhoor-v1';
-
+/* ============================================================
+   Grotius O&A · Rechtspraak-overhoorapp
+   Data: cases.json (uit "Rechtspraak per module.docx")
+   ============================================================ */
+const LS_KEY = 'grotius-rechtspraak-progress-v1';
+const SYL_BASE = 'file:///C:/Users/ErikVerweij/Claude/Grotius/';
 const state = {
-  cards: [],
-  meta: null,
-  progress: {},
-  session: {
-    queue: [], index: 0, seen: 0,
-    kenCount: 0, herhaalCount: 0, options: null,
-  },
+  data: null, cases: [], byId: {}, modules: {},
+  mode: 'naam', selMods: new Set(), status: 'alle', n: 25,
+  queue: [], idx: 0, results: [], flipped: false, answered: false,
+  progress: {}, lf: 'alle', zoek: ''
 };
 
-/* ---------- storage ---------- */
-function loadProgress() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) state.progress = JSON.parse(raw);
-  } catch (e) { state.progress = {}; }
+/* ---------- opslag ---------- */
+function loadProgress(){ try{ state.progress = JSON.parse(localStorage.getItem(LS_KEY)||'{}'); }catch(e){ state.progress = {}; } }
+function saveProgress(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state.progress)); }catch(e){} }
+function pr(id){ return state.progress[id] || {s:null, seen:0, ok:0, bad:0, t:0}; }
+function mark(id, known){
+  const p = pr(id); p.s = known ? 'k' : 'u'; p.seen++; known ? p.ok++ : p.bad++; p.t = Date.now();
+  state.progress[id] = p; saveProgress();
 }
-function saveProgress() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.progress)); }
-function setCardStatus(cardId, status) {
-  state.progress[cardId] = { status, lastSeen: new Date().toISOString() };
-  saveProgress();
+function status(id){ return pr(id).s; } // 'k' | 'u' | null
+
+/* ---------- data ---------- */
+async function loadData(){
+  if (window.CASES_DATA && Array.isArray(window.CASES_DATA.cases)) { state.data = window.CASES_DATA; }
+  else {
+    const r = await fetch('cases.json?t=' + Date.now(), {cache:'no-cache'});
+    state.data = await r.json();
+  }
+  state.cases = state.data.cases; state.modules = state.data.modules;
+  state.cases.forEach(c => { state.byId[c.id] = c; c.art = baseArt(c.artikel_kort); });
+  document.getElementById('bron-info').textContent = `${state.data.bron} · versie ${state.data.versie} · ${state.cases.length} uitspraken`;
 }
-function getCardStatus(cardId) { return state.progress[cardId]?.status ?? null; }
+function baseArt(a){ const m = (a||'').match(/art\.\s*[\d:.a-z]+\s*(?:lid\s*\d+\s*)?(?:BW|Rv|Fw|Awb|Wft|Wna|VWEU|EVRM|Ow|Wro|Sr|RO)?/i); return m ? m[0].replace(/\s*lid\s*\d+/i,'').replace(/\s+/g,' ').trim() : (a||'').split('(')[0].trim(); }
+function modTitle(m){ const t = (state.modules[m]||{}).titel||''; return t.length>48 ? t.slice(0,46)+'…' : t; }
+function esc(s){ return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-/* ---------- data laden ---------- */
-async function loadCards() {
-  if (window.CARDS_DATA && Array.isArray(window.CARDS_DATA.cards)) {
-    state.cards = window.CARDS_DATA.cards;
-    state.meta = window.CARDS_DATA.meta || {};
-    return;
-  }
-  try {
-    const resp = await fetch('cards.json?t=' + Date.now(), { cache: 'no-cache' });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const data = await resp.json();
-    state.cards = data.cards || [];
-    state.meta = data.meta || {};
-  } catch (e) {
-    throw new Error('Kon cards niet laden. Zorg dat cards.js naast index.html staat, of open de app via een webserver. (oorzaak: ' + e.message + ')');
-  }
-}
-
-/* ---------- filters / sessie ---------- */
-function buildQueue(opts) {
-  let filtered = state.cards.slice();
-  if (opts.module) filtered = filtered.filter(c => c.module === opts.module);
-  if (opts.type) filtered = filtered.filter(c => c.type === opts.type);
-  if (opts.statusFilter === 'new') filtered = filtered.filter(c => getCardStatus(c.id) === null);
-  else if (opts.statusFilter === 'repeat') filtered = filtered.filter(c => getCardStatus(c.id) === 'repeat');
-  else if (opts.statusFilter === 'not-known') filtered = filtered.filter(c => getCardStatus(c.id) !== 'known');
-  else if (opts.statusFilter === 'known') filtered = filtered.filter(c => getCardStatus(c.id) === 'known');
-
-  if (opts.weakFirst) {
-    const weighted = [];
-    filtered.forEach(c => {
-      const st = getCardStatus(c.id);
-      const weight = st === 'repeat' ? 3 : st === null ? 2 : 1;
-      for (let i = 0; i < weight; i++) weighted.push(c);
-    });
-    filtered = weighted;
-  }
-  if (opts.shuffle) {
-    for (let i = filtered.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
-    }
-  }
-  if (opts.weakFirst) {
-    const seen = new Set();
-    filtered = filtered.filter(c => { if (seen.has(c.id)) return false; seen.add(c.id); return true; });
-  }
-  return filtered;
-}
-
-/* ---------- UI rendering ---------- */
-function fmtDate(iso) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  const maanden = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
-  return `${d.getDate()} ${maanden[d.getMonth()]} ${d.getFullYear()}`;
-}
-
-function renderStats() {
-  const total = state.cards.length;
-  let known = 0, repeat = 0, newCount = 0;
-  state.cards.forEach(c => {
-    const st = getCardStatus(c.id);
-    if (st === 'known') known++; else if (st === 'repeat') repeat++; else newCount++;
-  });
-  document.getElementById('stat-total').textContent = total;
-  document.getElementById('stat-known').textContent = known;
-  document.getElementById('stat-repeat').textContent = repeat;
-  document.getElementById('stat-new').textContent = newCount;
-  document.getElementById('stat-bar').style.width = total > 0 ? `${Math.round(100 * known / total)}%` : '0%';
-  if (state.meta?.generated_at) {
-    document.getElementById('meta-info').textContent =
-      `Bijgewerkt ${fmtDate(state.meta.generated_at)} · ${total} kaarten` +
-      (state.meta.version ? ` · v${state.meta.version}` : '');
-  } else {
-    document.getElementById('meta-info').textContent = `${total} kaarten`;
-  }
-}
-
-function renderModuleFilter() {
-  const modules = [...new Set(state.cards.map(c => c.module))].sort();
-  const sel = document.getElementById('filter-module');
-  modules.forEach(m => {
-    const card = state.cards.find(c => c.module === m);
-    const opt = document.createElement('option');
-    opt.value = m;
-    opt.textContent = `${m} — ${card?.module_titel ?? ''}`;
-    sel.appendChild(opt);
+/* ---------- selectie ---------- */
+function pool(){
+  return state.cases.filter(c => state.selMods.has(c.module)).filter(c => {
+    const s = status(c.id);
+    if (state.status==='nieuw') return s===null;
+    if (state.status==='u') return s==='u';
+    if (state.status==='k') return s==='k';
+    return true;
   });
 }
+function weightedPick(list, n){
+  // gewicht: ken ik nog niet 3, nieuw 2, ken ik 1 ; zonder herhaling
+  const items = list.map(c => ({c, w: status(c.id)==='u'?3 : status(c.id)===null?2 : 1}));
+  const out = [];
+  while (items.length && (n===0 || out.length<n)) {
+    const tot = items.reduce((a,b)=>a+b.w,0); let r = Math.random()*tot, k=0;
+    for (; k<items.length; k++){ r -= items[k].w; if (r<=0) break; }
+    out.push(items.splice(Math.min(k,items.length-1),1)[0].c);
+  }
+  return out;
+}
+function updateSelInfo(){
+  const p = pool(); const n = state.n===0 ? p.length : Math.min(state.n, p.length);
+  document.getElementById('sel-info').textContent = `${p.length} beschikbaar · ${n} in deze ronde`;
+  document.getElementById('start').disabled = p.length===0 || (state.mode==='leer' && p.length<4);
+  renderTopStat();
+}
+function renderTopStat(){
+  const all = state.cases.filter(c=>state.selMods.has(c.module));
+  let k=0,u=0; all.forEach(c=>{ const s=status(c.id); if(s==='k')k++; else if(s==='u')u++; });
+  const nn = all.length-k-u;
+  document.getElementById('stat-top').innerHTML = `<span><b>${all.length}</b> geselecteerd</span><span style="color:var(--green)"><b>${k}</b> ken ik</span><span style="color:var(--red)"><b>${u}</b> nog niet</span><span><b>${nn}</b> nieuw</span>`;
+  const t = all.length||1;
+  document.getElementById('bar-top').innerHTML = `<i class="k" style="width:${k/t*100}%"></i><i class="u" style="width:${u/t*100}%"></i><i class="n" style="width:${nn/t*100}%"></i>`;
+}
 
-function renderModuleProgress() {
-  const container = document.getElementById('module-progress');
-  container.innerHTML = '';
-  const byModule = {};
-  state.cards.forEach(c => {
-    if (!byModule[c.module]) byModule[c.module] = { titel: c.module_titel, total: 0, known: 0, repeat: 0 };
-    byModule[c.module].total++;
-    const st = getCardStatus(c.id);
-    if (st === 'known') byModule[c.module].known++;
-    if (st === 'repeat') byModule[c.module].repeat++;
+/* ---------- start-scherm ---------- */
+function renderModChips(){
+  const box = document.getElementById('mod-chips'); box.innerHTML='';
+  Object.keys(state.modules).sort().forEach(m => {
+    const cnt = state.cases.filter(c=>c.module===m).length; if(!cnt) return;
+    const b = document.createElement('button'); b.className='chip'+(state.selMods.has(m)?' on':'');
+    b.innerHTML = `<span>${m}</span><small>${modTitle(m)}</small><small>· ${cnt}</small>`;
+    b.title = state.modules[m].titel;
+    b.onclick = () => { state.selMods.has(m) ? state.selMods.delete(m) : state.selMods.add(m); b.classList.toggle('on'); persistSel(); updateSelInfo(); };
+    box.appendChild(b);
   });
-  Object.entries(byModule).sort().forEach(([mod, info]) => {
-    const pct = info.total > 0 ? Math.round(100 * info.known / info.total) : 0;
-    const div = document.createElement('div');
-    div.className = 'module-row';
-    div.innerHTML = `
-      <div class="row">
-        <div class="name">${mod} · ${info.titel ?? ''}</div>
-        <div class="count">${info.known}/${info.total}</div>
-      </div>
-      <div class="track"><div class="bar" style="width: ${pct}%"></div></div>
-    `;
-    container.appendChild(div);
+}
+function persistSel(){ try{ localStorage.setItem(LS_KEY+'-sel', JSON.stringify({m:[...state.selMods], mode:state.mode, status:state.status, n:state.n})); }catch(e){} }
+function restoreSel(){
+  try{ const s = JSON.parse(localStorage.getItem(LS_KEY+'-sel')||'null'); if(s){ state.selMods=new Set(s.m); state.mode=s.mode||'naam'; state.status=s.status||'alle'; state.n=s.n??25; } }catch(e){}
+  if(!state.selMods.size) Object.keys(state.modules).forEach(m=>state.selMods.add(m));
+  document.querySelectorAll('#modes .mode').forEach(b=>b.classList.toggle('active', b.dataset.mode===state.mode));
+  document.querySelectorAll('#seg-status button').forEach(b=>b.classList.toggle('on', b.dataset.v===state.status));
+  document.querySelectorAll('#seg-n button').forEach(b=>b.classList.toggle('on', +b.dataset.v===state.n));
+}
+document.getElementById('modes').addEventListener('click', e => {
+  const b = e.target.closest('.mode'); if(!b) return;
+  state.mode = b.dataset.mode; document.querySelectorAll('#modes .mode').forEach(x=>x.classList.toggle('active',x===b)); persistSel(); updateSelInfo();
+});
+document.getElementById('seg-status').addEventListener('click', e => { const b=e.target.closest('button'); if(!b) return; state.status=b.dataset.v; [...b.parentNode.children].forEach(x=>x.classList.toggle('on',x===b)); persistSel(); updateSelInfo(); });
+document.getElementById('seg-n').addEventListener('click', e => { const b=e.target.closest('button'); if(!b) return; state.n=+b.dataset.v; [...b.parentNode.children].forEach(x=>x.classList.toggle('on',x===b)); persistSel(); updateSelInfo(); });
+document.getElementById('mod-all').onclick = () => { const all = Object.keys(state.modules); if (state.selMods.size===all.length) state.selMods.clear(); else all.forEach(m=>state.selMods.add(m)); renderModChips(); persistSel(); updateSelInfo(); };
+
+/* ---------- tabs ---------- */
+function showTab(id){
+  ['start','run','end','lijst','detail','meer'].forEach(t => document.getElementById('tab-'+t).classList.toggle('hide', t!==id));
+  document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab===id || (id==='detail'&&b.dataset.tab==='lijst') || ((id==='run'||id==='end')&&b.dataset.tab==='start')));
+  if (id==='lijst') renderLijst(); if (id==='meer') renderMeer(); if (id==='start') updateSelInfo();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+
+/* ---------- sessie ---------- */
+document.getElementById('start').onclick = startSession;
+document.getElementById('stop').onclick = () => endSession();
+document.getElementById('end-back').onclick = () => showTab('start');
+document.getElementById('end-again').onclick = startSession;
+
+function startSession(){
+  const p = pool(); if(!p.length) return;
+  if (state.mode==='leer') { state.queue = buildLeerQueue(p); }
+  else state.queue = weightedPick(p, state.n);
+  state.idx = 0; state.results = []; showTab('run'); renderQ();
+}
+function endSession(){
+  const r = state.results; const ok = r.filter(x=>x.ok).length;
+  document.getElementById('end-score').textContent = r.length ? `${ok} / ${r.length}` : '–';
+  document.getElementById('end-detail').textContent = r.length ? `${Math.round(ok/r.length*100)}% goed · ${state.mode==='leer'?'leerstukvragen':'uitspraken'}` : 'Geen vragen beantwoord.';
+  const wrong = r.filter(x=>!x.ok);
+  document.getElementById('end-list').innerHTML = wrong.length ? `<h2>Nog eens bekijken</h2><div class="list">` + wrong.map(x => x.ids.map(id => { const c=state.byId[id]; return `<div class="it" data-id="${id}"><span class="dot u"></span><span class="n">${esc(c.naam)}</span><span class="v">${c.module}</span></div>`; }).join('')).join('') + `</div>` : `<p class="muted">Alles goed. Mooi.</p>`;
+  document.getElementById('end-list').querySelectorAll('.it').forEach(el => el.onclick = () => openDetail(el.dataset.id));
+  showTab('end');
+}
+function next(){ state.idx++; if (state.idx >= state.queue.length) endSession(); else renderQ(); }
+
+/* afleiders: verband → zelfde module → zelfde artikel → rest */
+function distractors(c, n){
+  const excl = new Set([c.id, ...(c.zelfde_als||[])]);
+  const sameName = x => x.naam.split(' (')[0].toLowerCase() === c.naam.split(' (')[0].toLowerCase();
+  const take = (arr) => shuffle(arr.filter(x => !excl.has(x.id) && !sameName(x)));
+  const tiers = [
+    take((c.verband_ids||[]).map(id=>state.byId[id]).filter(Boolean)),
+    take(state.cases.filter(x => x.module===c.module)),
+    take(state.cases.filter(x => x.art && x.art===c.art)),
+    take(state.cases.filter(x => state.selMods.has(x.module))),
+    take(state.cases)
+  ];
+  const out = [];
+  for (const t of tiers) for (const x of t) { if (out.length>=n) break; if (!out.some(o=>o.id===x.id) && !out.some(o=>sameName(x)&&o.naam===x.naam)) { excl.add(x.id); (x.zelfde_als||[]).forEach(z=>excl.add(z)); out.push(x); } }
+  return out;
+}
+
+/* leerstuk-vragen: artikel met >=2 uitspraken in de pool */
+function buildLeerQueue(p){
+  const byArt = {}; p.forEach(c => { if(!c.art) return; (byArt[c.art] = byArt[c.art]||[]).push(c); });
+  let qs = Object.entries(byArt).filter(([a,l]) => l.length>=2).map(([a,l]) => ({art:a, items:l}));
+  qs = shuffle(qs); if (state.n) qs = qs.slice(0, state.n);
+  return qs.map(q => {
+    const correct = shuffle(q.items.slice()).slice(0, Math.min(3, q.items.length));
+    const others = shuffle(state.cases.filter(c => state.selMods.has(c.module) && c.art!==q.art && !correct.some(k=>k.naam===c.naam))).slice(0, 6-correct.length);
+    return { art:q.art, opts: shuffle([...correct.map(c=>({c,ok:true})), ...others.map(c=>({c,ok:false}))]), total:q.items.length, sel:new Set() };
   });
 }
 
-function renderFilterCount() {
-  const opts = readFilterOptions();
-  const queue = buildQueue({ ...opts, shuffle: false, weakFirst: false });
-  const el = document.getElementById('filter-count');
-  const btn = document.getElementById('start-btn');
-  el.textContent = `${queue.length} kaart${queue.length === 1 ? '' : 'en'} in selectie`;
-  btn.disabled = queue.length === 0;
+/* ---------- render vraag ---------- */
+function headMod(c){ return `<div class="mod">Module ${c.module} · ${esc(modTitle(c.module))}</div>`; }
+function essBlock(c, withTitle){
+  return `<div class="ess">${withTitle?`<div class="vraag">Essentie</div>`:''}<div class="regel">${esc(c.rechtsregel)}</div><div class="kern">${esc(c.kern)}</div><div class="leer">${esc(c.leerstuk_kort)} · ${esc(c.artikel_kort)}</div>${expanders(c)}</div>`;
+}
+function expanders(c){
+  const pdf = c.pdf_pagina ? `<a class="vlink" href="${sylLink(c)}" target="_blank" rel="noopener">Open syllabus op pdf-pagina ${c.pdf_pagina} (pc)</a>` : '';
+  return `<div class="exp" data-id="${c.id}">
+    <button data-p="feiten">Feiten</button><button data-p="citaat">Citaat</button>${c.verband?'<button data-p="verband">Verband</button>':''}<button data-p="wettekst">Wettekst</button><button data-p="bron">Bron</button><button data-p="claude">Vraag Claude</button>
+  </div>
+  <div class="panel hide" data-panel="feiten">${esc(c.feiten)}</div>
+  <div class="panel cit hide" data-panel="citaat">${esc(c.citaat)}<div style="font-style:normal;font-size:12px;color:var(--text3);margin-top:8px">${esc(c.bron_citaat)}</div></div>
+  ${c.verband?`<div class="panel hide" data-panel="verband"><b>Verband</b><br>${linkVerband(c)}</div>`:''}
+  <div class="panel hide" data-panel="wettekst"><b>${esc(c.artikel)}</b><br>${esc(c.wettekst)}<br><span style="font-size:12px;color:var(--text3)">${esc(c.wettekst_bron)}</span></div>
+  <div class="panel hide" data-panel="bron">${esc(c.verwijzing)}<br>${esc(c.bron_syllabus)}${pdf}${c.ook_onder?`<br><span style="font-size:12px">${esc(c.ook_onder)}</span>`:''}</div>`;
+}
+function linkVerband(c){
+  let t = esc(c.verband);
+  (c.verband_ids||[]).forEach(id => { const o = state.byId[id]; if(o) t = t.replace(esc(o.naam), `<a href="#" data-open="${id}">${esc(o.naam)}</a>`); });
+  return t;
+}
+function sylLink(c){
+  // mapnaam zoeken: eerste map die begint met modulenummer
+  const map = (window.MODULE_DIRS||{})[c.module];
+  if (!map) return '#';
+  const file = (window.MODULE_FILES||{})[c.module] || '';
+  return SYL_BASE + encodeURIComponent(map) + '/' + encodeURIComponent(file) + '#page=' + c.pdf_pagina;
+}
+function wireExpanders(root){
+  root.querySelectorAll('.exp button').forEach(b => b.onclick = () => {
+    const box = b.closest('.exp').parentNode; const p = b.dataset.p;
+    if (p==='claude') return askClaude(state.byId[b.closest('.exp').dataset.id]);
+    const panel = box.querySelector(`[data-panel="${p}"]`); const on = panel.classList.toggle('hide'); b.classList.toggle('on', !on);
+  });
+  root.querySelectorAll('[data-open]').forEach(a => a.onclick = e => { e.preventDefault(); openDetail(a.dataset.open); });
+}
+function askClaude(c){
+  const prompt = `Ik studeer voor de Grotius specialisatieopleiding Onderneming en Aansprakelijkheid (module ${c.module}: ${state.modules[c.module].titel}). Leg mij deze uitspraak helder uit en geef extra context: waarom is hij belangrijk, hoe verhoudt hij zich tot andere uitspraken, en wat moet ik onthouden voor het tentamen?\n\nUitspraak: ${c.verwijzing}\nKern: ${c.kern}\nLeerstuk: ${c.leerstuk}\nRechtsregel: ${c.rechtsregel}\nCitaat: ${c.citaat}`;
+  window.open('https://claude.ai/new?q=' + encodeURIComponent(prompt), '_blank', 'noopener,noreferrer');
 }
 
-function readFilterOptions() {
-  return {
-    module: document.getElementById('filter-module').value || null,
-    type: document.getElementById('filter-type').value || null,
-    statusFilter: document.getElementById('filter-status').value,
-    shuffle: document.getElementById('opt-shuffle').checked,
-    weakFirst: document.getElementById('opt-weak-first').checked,
+function renderQ(){
+  const q = document.getElementById('q'); state.flipped=false; state.answered=false;
+  document.getElementById('p-n').textContent = `${state.idx+1} / ${state.queue.length}`;
+  document.getElementById('p-bar').style.width = (state.idx/state.queue.length*100)+'%';
+  if (state.mode==='leer') return renderLeer(q);
+  const c = state.queue[state.idx];
+  if (state.mode==='naam') {
+    q.innerHTML = `<div class="q">${headMod(c)}<div class="naam">${esc(c.naam)}</div><div class="verw">${esc(c.verwijzing_kort)}</div><div id="ess"></div></div>
+      <div class="acts"><button class="btn one" id="flip">Essentie weergeven</button></div>`;
+    document.getElementById('flip').onclick = () => flipNaam(c);
+  } else if (state.mode==='ess') {
+    q.innerHTML = `<div class="q">${headMod(c)}<div class="vraag">Welke uitspraak?</div><div class="regel">${esc(c.rechtsregel)}</div><div class="kern">${esc(c.kern)}</div><div id="ess"></div></div>
+      <div class="acts"><button class="btn one" id="flip">Naam weergeven</button></div>`;
+    document.getElementById('flip').onclick = () => flipEss(c);
+  } else if (state.mode==='mc-naam') {
+    const opts = shuffle([c, ...distractors(c,3)]);
+    q.innerHTML = `<div class="q">${headMod(c)}<div class="vraag">Welke uitspraak hoort bij deze rechtsregel?</div><div class="regel">${esc(c.rechtsregel)}</div><div class="kern">${esc(c.kern)}</div><div id="ess"></div></div>
+      <div class="opts">${opts.map((o,i)=>`<button class="opt" data-id="${o.id}"><span class="k">${i+1}</span><span>${esc(o.naam)}<span class="sub">${esc(o.verwijzing_kort)}</span></span></button>`).join('')}</div><div id="fb"></div><div class="acts hide" id="nextbox"><button class="btn one" id="next">Volgende</button></div>`;
+    wireMC(c, opts);
+  } else if (state.mode==='mc-ess') {
+    const opts = shuffle([c, ...distractors(c,3)]);
+    q.innerHTML = `<div class="q">${headMod(c)}<div class="naam">${esc(c.naam)}</div><div class="verw">${esc(c.verwijzing_kort)}</div><div class="vraag" style="margin-top:14px">Welke rechtsregel hoort erbij?</div><div id="ess"></div></div>
+      <div class="opts">${opts.map((o,i)=>`<button class="opt" data-id="${o.id}"><span class="k">${i+1}</span><span>${esc(o.rechtsregel)}</span></button>`).join('')}</div><div id="fb"></div><div class="acts hide" id="nextbox"><button class="btn one" id="next">Volgende</button></div>`;
+    wireMC(c, opts);
+  }
+}
+function flipNaam(c){
+  if (state.flipped) return; state.flipped=true;
+  document.getElementById('ess').innerHTML = essBlock(c, true); wireExpanders(document.getElementById('q'));
+  document.querySelector('#tab-run .acts').innerHTML = `<button class="btn red" id="no">Ken ik nog niet</button><button class="btn green" id="yes">Ken ik</button>`;
+  document.getElementById('no').onclick = () => { mark(c.id,false); state.results.push({ids:[c.id],ok:false}); next(); };
+  document.getElementById('yes').onclick = () => { mark(c.id,true); state.results.push({ids:[c.id],ok:true}); next(); };
+}
+function flipEss(c){
+  if (state.flipped) return; state.flipped=true;
+  document.getElementById('ess').innerHTML = `<div class="ess"><div class="vraag">Uitspraak</div><div class="naam" style="font-size:28px">${esc(c.naam)}</div><div class="verw">${esc(c.verwijzing)}</div><div class="leer">${esc(c.leerstuk_kort)} · ${esc(c.artikel_kort)}</div>${expanders(c)}</div>`;
+  wireExpanders(document.getElementById('q'));
+  document.querySelector('#tab-run .acts').innerHTML = `<button class="btn red" id="no">Wist ik niet</button><button class="btn green" id="yes">Wist ik</button>`;
+  document.getElementById('no').onclick = () => { mark(c.id,false); state.results.push({ids:[c.id],ok:false}); next(); };
+  document.getElementById('yes').onclick = () => { mark(c.id,true); state.results.push({ids:[c.id],ok:true}); next(); };
+}
+function wireMC(c, opts){
+  const btns = [...document.querySelectorAll('.opt')];
+  btns.forEach(b => b.onclick = () => {
+    if (state.answered) return; state.answered=true;
+    const ok = b.dataset.id===c.id;
+    btns.forEach(x => { if (x.dataset.id===c.id) x.classList.add('ok'); else if (x===b) x.classList.add('bad'); else x.classList.add('dim'); });
+    document.getElementById('fb').innerHTML = `<div class="fb ${ok?'ok':'bad'}">${ok?'Goed.':'Niet goed. Het juiste antwoord is '+esc(c.naam)+'.'}</div>`;
+    mark(c.id, ok); state.results.push({ids:[c.id],ok});
+    document.getElementById('ess').innerHTML = essBlock(c, state.mode==='mc-ess'); wireExpanders(document.getElementById('q'));
+    document.getElementById('nextbox').classList.remove('hide'); document.getElementById('next').onclick = next;
+  });
+}
+function renderLeer(q){
+  const L = state.queue[state.idx];
+  q.innerHTML = `<div class="q"><div class="mod">Leerstuk</div><div class="naam" style="font-size:30px">${esc(L.art)}</div><div class="verw">Welke uitspraken gaan hierover? Kies alle juiste (${L.opts.filter(o=>o.ok).length} van de ${L.opts.length}).</div></div>
+    <div class="opts">${L.opts.map((o,i)=>`<button class="opt" data-id="${o.c.id}"><span class="k">${i+1}</span><span>${esc(o.c.naam)}<span class="sub">Module ${o.c.module} · ${esc(o.c.verwijzing_kort)}</span></span></button>`).join('')}</div>
+    <div id="fb"></div><div class="acts"><button class="btn one" id="check">Controleer</button></div>`;
+  const btns=[...q.querySelectorAll('.opt')];
+  btns.forEach(b => b.onclick = () => { if(state.answered) return; b.classList.toggle('sel'); L.sel.has(b.dataset.id)?L.sel.delete(b.dataset.id):L.sel.add(b.dataset.id); });
+  document.getElementById('check').onclick = () => {
+    if (state.answered) return; state.answered=true;
+    let allOk = true;
+    btns.forEach(b => { const o = L.opts.find(x=>x.c.id===b.dataset.id); const chosen = L.sel.has(b.dataset.id);
+      if (o.ok) { b.classList.add('ok'); if(!chosen) allOk=false; } else if (chosen) { b.classList.add('bad'); allOk=false; } else b.classList.add('dim'); b.classList.remove('sel'); });
+    const corr = L.opts.filter(o=>o.ok);
+    corr.forEach(o => mark(o.c.id, allOk));
+    state.results.push({ids:corr.map(o=>o.c.id), ok:allOk});
+    document.getElementById('fb').innerHTML = `<div class="fb ${allOk?'ok':'bad'}">${allOk?'Goed.':'Niet helemaal.'}</div>` + corr.map(o=>`<div class="verb"><b>${esc(o.c.naam)}</b> · ${esc(o.c.leerstuk_kort)}<br>${esc(o.c.rechtsregel)}</div>`).join('') + (L.total>corr.length?`<p class="muted" style="margin-top:8px">In totaal horen ${L.total} uitspraken uit je selectie bij ${esc(L.art)}; hier zijn er ${corr.length} getoond.</p>`:'');
+    document.querySelector('#tab-run .acts').innerHTML = `<button class="btn one" id="next">Volgende</button>`; document.getElementById('next').onclick = next;
   };
 }
 
-/* ---------- sessie ---------- */
-function startSession() {
-  const opts = readFilterOptions();
-  const queue = buildQueue(opts);
-  if (queue.length === 0) return;
-  state.session = { queue, index: 0, seen: 0, kenCount: 0, herhaalCount: 0, options: opts };
-  document.getElementById('home').classList.add('hide');
-  document.getElementById('end-view').classList.add('hide');
-  document.getElementById('card-view').classList.remove('hide');
-  window.scrollTo(0, 0);
-  renderCurrentCard();
-}
+/* ---------- sneltoetsen ---------- */
+document.addEventListener('keydown', e => {
+  if (document.getElementById('tab-run').classList.contains('hide')) return;
+  if (e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+  const k = e.key;
+  if (k===' ') { e.preventDefault(); const f=document.getElementById('flip'); if(f) f.click(); }
+  if (state.mode==='naam'||state.mode==='ess') { if(k==='1'){const b=document.getElementById('no'); if(b)b.click();} if(k==='2'){const b=document.getElementById('yes'); if(b)b.click();} }
+  if (state.mode.startsWith('mc')||state.mode==='leer') { if('123456'.includes(k)&&k!==''){ const o=document.querySelectorAll('.opt')[+k-1]; if(o&&!state.answered) o.click(); } }
+  if (k==='Enter') { const n=document.getElementById('next')||document.getElementById('check'); if(n) n.click(); }
+});
 
-function renderCurrentCard() {
-  const s = state.session;
-  if (s.index >= s.queue.length) return endSession();
-  const card = s.queue[s.index];
-
-  document.getElementById('card-progress').textContent = `${s.index + 1} / ${s.queue.length}`;
-  document.getElementById('card-progress-bar').style.width = `${100 * s.index / s.queue.length}%`;
-
-  document.getElementById('chip-module').textContent = `Module ${card.module} · ${card.module_titel ?? ''}`;
-  document.getElementById('chip-type').textContent = card.type;
-  document.getElementById('card-date').textContent = card.lesdag_datum ? `Dagdeel · ${fmtDate(card.lesdag_datum)}` : '';
-  document.getElementById('card-question').textContent = card.vraag;
-
-  const prev = getCardStatus(card.id);
-  const statusChip = document.getElementById('chip-status');
-  statusChip.classList.remove('chip-status-known','chip-status-repeat','hide');
-  if (prev === 'repeat') {
-    statusChip.textContent = 'eerder: herhalen';
-    statusChip.classList.add('chip-status-repeat');
-  } else if (prev === 'known') {
-    statusChip.textContent = 'eerder: ken ik';
-    statusChip.classList.add('chip-status-known');
-  } else {
-    statusChip.classList.add('hide');
-  }
-
-  document.getElementById('answer-section').classList.add('hide');
-  document.getElementById('reveal-btn').classList.remove('hide');
-  document.getElementById('rating-buttons').classList.add('hide');
-  document.getElementById('skip-btn').classList.add('hide');
-
-  document.getElementById('card-answer').textContent = card.antwoord || '—';
-  if (card.citaat) {
-    document.getElementById('citaat-block').classList.remove('hide');
-    document.getElementById('card-citaat').textContent = `"${card.citaat}"`;
-    document.getElementById('card-bron').textContent = card.bron ? `— ${card.bron}` : '';
-  } else { document.getElementById('citaat-block').classList.add('hide'); }
-  if (card.context) {
-    document.getElementById('context-block').classList.remove('hide');
-    document.getElementById('card-context').textContent = card.context;
-  } else { document.getElementById('context-block').classList.add('hide'); }
-  if (card.vindplaats) {
-    document.getElementById('vindplaats-block').classList.remove('hide');
-    document.getElementById('card-vindplaats').textContent = card.vindplaats;
-  } else { document.getElementById('vindplaats-block').classList.add('hide'); }
-
-  const container = document.getElementById('card-container');
-  container.classList.remove('card-fade');
-  void container.offsetWidth;
-  container.classList.add('card-fade');
+/* ---------- lijst & detail ---------- */
+document.getElementById('seg-lf').addEventListener('click', e => { const b=e.target.closest('button'); if(!b) return; state.lf=b.dataset.v; [...b.parentNode.children].forEach(x=>x.classList.toggle('on',x===b)); renderLijst(); });
+document.getElementById('zoek').addEventListener('input', e => { state.zoek = e.target.value.toLowerCase(); renderLijst(); });
+function renderLijst(){
+  const box = document.getElementById('lijst'); let html='';
+  Object.keys(state.modules).sort().forEach(m => {
+    const items = state.cases.filter(c => c.module===m).filter(c => { const s=status(c.id); return state.lf==='alle' || (state.lf==='nieuw'&&s===null) || s===state.lf; })
+      .filter(c => !state.zoek || (c.naam+' '+c.artikel_kort+' '+c.leerstuk_kort+' '+c.kern).toLowerCase().includes(state.zoek));
+    if (!items.length) return;
+    html += `<div class="modhead"><span class="t">Module ${m} · ${esc(modTitle(m))}</span><span class="c">${items.length}</span></div><div class="card list">` +
+      items.map(c => `<div class="it" data-id="${c.id}"><span class="dot ${status(c.id)||''}"></span><span class="n">${esc(c.naam)}</span><span class="v">${esc(c.verwijzing_kort)}</span></div>`).join('') + `</div>`;
+  });
+  box.innerHTML = html || '<p class="muted">Niets gevonden.</p>';
+  box.querySelectorAll('.it').forEach(el => el.onclick = () => openDetail(el.dataset.id));
 }
+function openDetail(id){
+  const c = state.byId[id]; if(!c) return;
+  const s = status(id);
+  document.getElementById('det').innerHTML = `<div class="q">${headMod(c)}<div class="naam">${esc(c.naam)}</div><div class="verw">${esc(c.verwijzing)}</div>${essBlock(c,true)}</div>
+    <div class="acts"><button class="btn ${s==='u'?'red':'ghost'}" id="d-no">Ken ik nog niet</button><button class="btn ${s==='k'?'green':'ghost'}" id="d-yes">Ken ik</button></div>`;
+  wireExpanders(document.getElementById('det'));
+  document.getElementById('d-no').onclick = () => { mark(id,false); openDetail(id); };
+  document.getElementById('d-yes').onclick = () => { mark(id,true); openDetail(id); };
+  showTab('detail');
+}
+document.getElementById('det-back').onclick = () => showTab('lijst');
 
-function revealAnswer() {
-  document.getElementById('answer-section').classList.remove('hide');
-  document.getElementById('reveal-btn').classList.add('hide');
-  document.getElementById('rating-buttons').classList.remove('hide');
-  document.getElementById('skip-btn').classList.remove('hide');
+/* ---------- meer ---------- */
+function renderMeer(){
+  const box = document.getElementById('meer-stats'); let html='';
+  Object.keys(state.modules).sort().forEach(m => {
+    const all = state.cases.filter(c=>c.module===m); if(!all.length) return;
+    let k=0,u=0; all.forEach(c=>{const s=status(c.id); if(s==='k')k++; else if(s==='u')u++;}); const n=all.length-k-u;
+    html += `<div style="margin-bottom:12px"><div class="row" style="justify-content:space-between"><span style="font-size:14px"><b>${m}</b> ${esc(modTitle(m))}</span><span class="muted">${k}/${all.length} gekend</span></div><div class="bar"><i class="k" style="width:${k/all.length*100}%"></i><i class="u" style="width:${u/all.length*100}%"></i><i class="n" style="width:${n/all.length*100}%"></i></div></div>`;
+  });
+  box.innerHTML = html;
 }
-function rateCard(status) {
-  const card = state.session.queue[state.session.index];
-  setCardStatus(card.id, status);
-  state.session.seen++;
-  if (status === 'known') state.session.kenCount++;
-  else if (status === 'repeat') state.session.herhaalCount++;
-  nextCard();
-}
-function skipCard() { nextCard(); }
-function nextCard() {
-  state.session.index++;
-  if (state.session.index >= state.session.queue.length) return endSession();
-  renderCurrentCard();
-  window.scrollTo(0, 0);
-}
-function endSession() {
-  document.getElementById('card-view').classList.add('hide');
-  document.getElementById('end-view').classList.remove('hide');
-  const s = state.session;
-  document.getElementById('end-summary').textContent =
-    `${s.seen} van ${s.queue.length} kaarten beoordeeld · ${s.kenCount} ken je · ${s.herhaalCount} te herhalen`;
-}
-function backToHome() {
-  document.getElementById('card-view').classList.add('hide');
-  document.getElementById('end-view').classList.add('hide');
-  document.getElementById('home').classList.remove('hide');
-  renderStats();
-  renderModuleProgress();
-  renderFilterCount();
-  window.scrollTo(0, 0);
-}
-function resetProgress() {
-  if (!confirm('Weet je zeker dat je alle voortgang wilt wissen?')) return;
-  state.progress = {};
-  saveProgress();
-  renderStats();
-  renderModuleProgress();
-  renderFilterCount();
-}
-
-function askClaudeForContext() {
-  const card = state.session.queue[state.session.index];
-  if (!card) return;
-  const lines = [
-    'Ik bestudeer voor de Grotius-specialisatieopleiding Onderneming en aansprakelijkheid (2026).',
-    '',
-    `Module ${card.module} — ${card.module_titel ?? ''}`,
-    `Type: ${card.type}`,
-    '',
-    `Vraag: ${card.vraag}`,
-    '',
-    `Antwoord (mijn samenvatting): ${card.antwoord ?? '—'}`,
-  ];
-  if (card.citaat) lines.push('', `Citaat uit syllabus: "${card.citaat}"${card.bron ? ` — ${card.bron}` : ''}`);
-  if (card.context) lines.push('', `Aanvullende context: ${card.context}`);
-  if (card.vindplaats) lines.push('', `Vindplaats: ${card.vindplaats}`);
-  lines.push(
-    '',
-    'Kun je dit verder uitleggen? Ik ben advocaat aansprakelijkheidsrecht, dus de basis hoef je niet uit te leggen — focus op nuance, kritiek in de literatuur, verwante arresten of leerstukken, en wat ik moet weten voor het tentamen.'
-  );
-  const prompt = lines.join('\n');
-  const url = `https://claude.ai/new?q=${encodeURIComponent(prompt)}`;
-  window.open(url, '_blank', 'noopener,noreferrer');
-}
+function exportCode(){ return btoa(unescape(encodeURIComponent(JSON.stringify({v:1, t:Date.now(), p:state.progress})))); }
+document.getElementById('exp-copy').onclick = async () => { const code = exportCode(); document.getElementById('imp-code').value = code; try { await navigator.clipboard.writeText(code); toast('Code gekopieerd'); } catch(e){ toast('Selecteer en kopieer de code hieronder'); } };
+document.getElementById('exp-share').onclick = async () => {
+  const code = exportCode(); const blob = new Blob([code], {type:'text/plain'}); const file = new File([blob], 'grotius-voortgang.txt', {type:'text/plain'});
+  if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) { try { await navigator.share({files:[file], title:'Grotius voortgang'}); return; } catch(e){} }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'grotius-voortgang.txt'; a.click();
+};
+document.getElementById('imp-go').onclick = () => {
+  const code = document.getElementById('imp-code').value.trim(); if(!code) return toast('Geen code');
+  try { const obj = JSON.parse(decodeURIComponent(escape(atob(code)))); let n=0;
+    Object.entries(obj.p||{}).forEach(([id,p]) => { const cur = state.progress[id]; if (!cur || (p.t||0) > (cur.t||0)) { state.progress[id]=p; n++; } });
+    saveProgress(); toast(`${n} beoordelingen geïmporteerd`); renderMeer(); renderTopStat();
+  } catch(e){ toast('Code niet herkend'); }
+};
+document.getElementById('reset').onclick = () => { if (confirm('Alle voortgang op dit apparaat wissen?')) { state.progress={}; saveProgress(); renderMeer(); renderTopStat(); toast('Gewist'); } };
 
 /* ---------- init ---------- */
-async function init() {
+(async function(){
   loadProgress();
-  try { await loadCards(); }
-  catch (e) {
-    document.getElementById('home').innerHTML = `
-      <div class="surface" style="padding: 32px; text-align: center;">
-        <h1 class="display-serif" style="font-size: 24px; margin: 0 0 8px;">Kaarten laden mislukt</h1>
-        <p style="color: var(--text-2); font-size: 13px; margin: 0;">Zorg dat <code>cards.js</code> naast <code>index.html</code> staat.</p>
-        <p style="color: var(--text-4); font-size: 11px; margin-top: 18px;">${e.message}</p>
-      </div>`;
-    return;
-  }
-  renderStats();
-  renderModuleFilter();
-  renderModuleProgress();
-  renderFilterCount();
-
-  document.getElementById('start-btn').addEventListener('click', startSession);
-  document.getElementById('reveal-btn').addEventListener('click', revealAnswer);
-  document.getElementById('known-btn').addEventListener('click', () => rateCard('known'));
-  document.getElementById('repeat-btn').addEventListener('click', () => rateCard('repeat'));
-  document.getElementById('skip-btn').addEventListener('click', skipCard);
-  document.getElementById('back-btn').addEventListener('click', backToHome);
-  document.getElementById('end-back-btn').addEventListener('click', backToHome);
-  document.getElementById('reset-btn').addEventListener('click', resetProgress);
-  document.getElementById('context-btn').addEventListener('click', askClaudeForContext);
-
-  ['filter-module', 'filter-type', 'filter-status'].forEach(id => {
-    document.getElementById(id).addEventListener('change', renderFilterCount);
-  });
-
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(() => { /* stil falen in dev */ });
-    });
-  }
-}
-
-init();
+  try { await loadData(); } catch(e) { document.getElementById('tab-start').innerHTML = '<div class="card"><p>Kon cases.json niet laden.</p></div>'; return; }
+  restoreSel(); renderModChips(); updateSelInfo();
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
 </script>
-
-<footer class="app-footer">© 2026 Erik Verweij · Alle rechten voorbehouden</footer>
 </body>
 </html>
