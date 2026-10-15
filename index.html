@@ -160,6 +160,7 @@ textarea.code{width:100%;min-height:90px;background:var(--bg2);border:1px solid 
   <div class="card">
     <div class="stat" id="stat-top"></div>
     <div class="bar" id="bar-top"></div>
+    <div style="margin-top:14px;text-align:right"><button class="btn ghost sm" id="restart">Opnieuw beginnen</button></div>
   </div>
   <div style="margin-top:14px"><button class="btn" id="start">Start</button></div>
 </section>
@@ -209,7 +210,7 @@ textarea.code{width:100%;min-height:90px;background:var(--bg2);border:1px solid 
     <p class="muted" style="margin-bottom:10px">Je voortgang staat op dit apparaat. Kopieer de code hieronder en plak die op je andere apparaat (pc ↔ iPhone). Importeren voegt samen: de nieuwste beoordeling per uitspraak wint.</p>
     <div class="acts"><button class="btn ghost" id="exp-copy">Kopieer code</button><button class="btn ghost" id="exp-share">Deel / download</button></div>
     <textarea class="code" id="imp-code" placeholder="Plak hier een code van je andere apparaat…" style="margin-top:12px"></textarea>
-    <div class="acts"><button class="btn" id="imp-go">Importeren</button><button class="btn ghost" id="reset">Alles wissen</button></div>
+    <div class="acts"><button class="btn" id="imp-go">Importeren</button><button class="btn ghost" id="reset">Opnieuw beginnen</button></div>
   </div>
   <div class="card">
     <h2>Sneltoetsen (pc)</h2>
@@ -367,6 +368,8 @@ function startSession(){
   const p = pool(); if(!p.length) return toast('Geen uitspraken in deze selectie');
   state.queue = state.mode==='leer' ? buildLeerQueue(p) : weightedPick(p, state.n);
   if (!state.queue.length) return toast(state.mode==='leer' ? 'Te weinig uitspraken per artikel voor leerstukvragen' : 'Geen uitspraken in deze selectie');
+  try { localStorage.removeItem(LS_KEY + '-backup'); } catch(e){} // terugzetten kan alleen tot je weer gaat oefenen
+  renderUndo();
   state.idx = 0; state.results = []; showTab('run'); renderQ();
 }
 function endSession(){
@@ -635,7 +638,29 @@ document.getElementById('imp-go').onclick = () => {
     saveProgress(); toast(`${n} beoordelingen geïmporteerd`); renderMeer(); renderTopStat();
   } catch(e){ toast('Code niet herkend'); }
 };
-document.getElementById('reset').onclick = () => { if (confirm('Alle voortgang op dit apparaat wissen?')) { state.progress={}; saveProgress(); renderMeer(); renderTopStat(); toast('Gewist'); } };
+/* Opnieuw beginnen: alle uitspraken weer "nieuw". Bewaart een kopie van de oude voortgang zodat een misklik te herstellen is. */
+const LS_BACKUP = LS_KEY + '-backup';
+function restartAll(){
+  const n = Object.keys(state.progress).length;
+  if (!n) return toast('Er is nog geen voortgang om te wissen');
+  if (!confirm(`Opnieuw beginnen? Al je beoordelingen (${n} uitspraken) worden gewist en alle uitspraken staan weer op "nieuw".`)) return;
+  try { localStorage.setItem(LS_BACKUP, JSON.stringify({t:Date.now(), p:state.progress})); } catch(e){}
+  state.progress = {}; saveProgress(); renderMeer(); updateSelInfo(); renderUndo();
+  toast('Alle uitspraken staan weer op nieuw');
+}
+function undoRestart(){
+  try { const b = JSON.parse(localStorage.getItem(LS_BACKUP)||'null'); if (!b) return;
+    state.progress = b.p || {}; saveProgress(); localStorage.removeItem(LS_BACKUP); renderMeer(); updateSelInfo(); renderUndo(); toast('Vorige voortgang hersteld');
+  } catch(e){ toast('Herstellen mislukt'); }
+}
+function renderUndo(){
+  let has = false; try { has = !!localStorage.getItem(LS_BACKUP); } catch(e){}
+  let b = document.getElementById('undo-restart');
+  if (has && !b) { b = document.createElement('button'); b.id='undo-restart'; b.className='btn ghost sm'; b.style.marginRight='8px'; b.textContent='Vorige voortgang terugzetten'; b.onclick=undoRestart; document.getElementById('restart').before(b); }
+  if (!has && b) b.remove();
+}
+document.getElementById('reset').onclick = restartAll;
+document.getElementById('restart').onclick = restartAll;
 
 /* ---------- init ---------- */
 (async function(){
@@ -644,7 +669,7 @@ document.getElementById('reset').onclick = () => { if (confirm('Alle voortgang o
     document.querySelectorAll('nav.tabs button').forEach(b => b.disabled = true);
     document.getElementById('tab-start').innerHTML = '<div class="card"><p>De uitspraken konden niet worden geladen. Controleer je internetverbinding en open de app opnieuw.</p></div>'; return;
   }
-  restoreSel(); renderModChips(); updateSelInfo();
+  restoreSel(); renderModChips(); updateSelInfo(); renderUndo();
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     // Nieuwe versie direct tonen: herlaad één keer zodra een nieuwe service worker het overneemt,
     // maar niet bij het allereerste bezoek en niet midden in een ronde (dan pas na afloop).
