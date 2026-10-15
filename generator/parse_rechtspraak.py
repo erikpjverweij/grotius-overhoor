@@ -64,6 +64,17 @@ for idx, p in enumerate(paras):
 if cur: blocks.append(cur)
 
 print(f'Blokken (uitspraken): {len(blocks)}')
+# Alleen uitspraken die de syllabus voorschrijft (verplicht of aanbevolen). Het document markeert
+# uitspraken buiten de syllabuslijst met "[niet in syllabuslijst ...]" in de naam (Bijlage A).
+# Module 22 heeft geen jurisprudentielijst: de uitspraken staan alleen ter illustratie in de bijdrage van Asser
+# en zijn niet voorgeschreven (besluit Erik, 15 oktober 2026).
+UITGESLOTEN_MODULES = {'22'}
+uitgesloten = [b for b in blocks if 'niet in syllabuslijst' in b['naam'].lower() or b['module'] in UITGESLOTEN_MODULES]
+for m in UITGESLOTEN_MODULES:
+    modules.pop(m, None)
+blocks = [b for b in blocks if b not in uitgesloten]
+print(f'Uitgesloten (niet in syllabuslijst): {[b["module"] + "." + str(b["nr"]) + " " + b["naam"] for b in uitgesloten]}')
+UITGESLOTEN_IDS = {f"{b['module']}.{b['nr']:02d}" for b in uitgesloten}
 
 WET_END = re.compile(r'(geldend per|geldend vanaf|Wetboek|Verordening|Verdrag|Richtlijn).*\d{2}-\d{2}-\d{4}', re.I)
 
@@ -137,7 +148,9 @@ for b in blocks:
 
 # Dubbelen: "Deze uitspraak staat ook onder 16.2 Soldeermachine." → zelfde_als = ['16.02']
 for c in cases:
-    c['zelfde_als'] = [f"{m}.{int(n):02d}" for m, n in re.findall(r'(\d{2})\.(\d{1,2})', c['ook_onder'])]
+    c['zelfde_als'] = [z for z in (f"{m}.{int(n):02d}" for m, n in re.findall(r'(\d{2})\.(\d{1,2})', c['ook_onder'])) if z not in UITGESLOTEN_IDS]
+    if not c['zelfde_als']:
+        c['ook_onder'] = ''  # verwees alleen naar een uitgesloten uitspraak
 # Korte verwijzing voor op de kaart: instantie + datum ("HR 19 juli 2019")
 for c in cases:
     m = re.match(r'^(.*?\d{4})', c['verwijzing'])

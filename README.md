@@ -15,7 +15,7 @@ Sinds 14 oktober 2026 beperkt tot rechtspraak. De eerdere kaartenapp (439 kaarte
 | Bestand | Functie |
 |---|---|
 | `index.html` | De app (één bestand: opmaak, logica, vijf oefenvormen) |
-| `cases.json` | 214 uitspraken, 20 modules; wordt network-first geladen |
+| `cases.json` | 204 uitspraken, 19 modules (alleen uitspraken uit de jurisprudentielijsten van de syllabi; module 22 heeft geen voorgeschreven rechtspraak); wordt network-first geladen |
 | `cases.js` | Zelfde data als JS-variabele, voor gebruik vanaf `file://` en als offline-fallback; bevat ook de mapnamen van de syllabi voor de knop "Open syllabus" |
 | `sw.js` | Service worker. `CACHE_NAME` verhogen bij elke wijziging aan index.html |
 | `manifest.webmanifest`, `icon-*.png` | PWA-configuratie |
