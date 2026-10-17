@@ -116,7 +116,11 @@ h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--text
 .list .dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px;background:var(--border2)}
 .list .dot.k{background:var(--green)}.list .dot.u{background:var(--red)}
 .list .n{flex:1;font-size:15px}
-.list .v{color:var(--text3);font-size:12px}
+.list .v{color:var(--text2);font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.list .sub2{display:block;color:var(--text3);font-size:12px;margin-top:2px}
+.q .mod .hist{float:right;text-transform:none;letter-spacing:0;color:var(--text3)}
+.histbox{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--text2);margin-top:12px}
+.histbox b{color:var(--text)}
 .modhead{display:flex;justify-content:space-between;align-items:baseline;margin:18px 0 6px}
 .modhead .t{font-weight:600;font-size:14px}
 .modhead .c{color:var(--text3);font-size:12px}
@@ -204,6 +208,7 @@ textarea.code{width:100%;min-height:90px;background:var(--bg2);border:1px solid 
   <div class="card">
     <div class="row">
       <div class="seg" id="seg-lf"><button data-v="alle" class="on">Alle</button><button data-v="u">Ken ik nog niet</button><button data-v="k">Ken ik</button><button data-v="nieuw">Nieuw</button></div>
+      <div class="seg" id="seg-sort"><button data-v="volgorde" class="on">Syllabusvolgorde</button><button data-v="moeilijk">Laagste score eerst</button><button data-v="vaak">Vaakst getoond</button></div>
       <input id="zoek" placeholder="Zoek naam, artikel, leerstuk…" style="flex:1;min-width:160px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:9px 12px;color:var(--text);font-size:16px">
     </div>
   </div>
@@ -254,18 +259,37 @@ const state = {
   data: null, cases: [], byId: {}, modules: {},
   mode: 'naam', selMods: new Set(), status: 'alle', n: 25,
   queue: [], idx: 0, results: [], flipped: false, answered: false,
-  progress: {}, lf: 'alle', zoek: ''
+  progress: {}, lf: 'alle', zoek: '', sort: 'volgorde'
 };
 
 /* ---------- opslag ---------- */
 function loadProgress(){ try{ state.progress = JSON.parse(localStorage.getItem(LS_KEY)||'{}'); }catch(e){ state.progress = {}; } }
 function saveProgress(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state.progress)); }catch(e){} }
-function pr(id){ return state.progress[id] || {s:null, seen:0, ok:0, bad:0, t:0}; }
-function mark(id, known){
-  const p = pr(id); p.s = known ? 'k' : 'u'; p.seen++; known ? p.ok++ : p.bad++; p.t = Date.now();
+/* Geheugen per uitspraak:
+   s     = laatste beoordeling ('k' ken ik, 'u' ken ik nog niet, null nieuw)
+   shown = hoe vaak de uitspraak als vraag in beeld is geweest (ook als je daarna op Stop drukte)
+   seen  = hoe vaak je hem hebt beantwoord;  ok / bad = waarvan goed / fout
+   t     = tijdstip laatste wijziging; last = tijdstip laatst getoond */
+function pr(id){
+  const p = state.progress[id] || {s:null, shown:0, seen:0, ok:0, bad:0, t:0, last:0};
+  if (p.shown === undefined || p.shown < p.seen) p.shown = Math.max(p.shown||0, p.seen||0); // oudere voortgang: shown ontbrak nog
+  return p;
+}
+function markShown(id){ const p = pr(id); p.shown++; p.last = Date.now(); p.t = p.last; state.progress[id] = p; saveProgress(); }
+/* counts=false: alleen de status zetten (bijv. vanuit het detailscherm), niet meetellen als antwoord */
+function mark(id, known, counts=true){
+  const p = pr(id); p.s = known ? 'k' : 'u'; if (counts) { p.seen++; known ? p.ok++ : p.bad++; } p.t = Date.now();
   state.progress[id] = p; saveProgress();
 }
 function status(id){ return pr(id).s; } // 'k' | 'u' | null
+function pct(p){ return p.seen ? Math.round(p.ok / p.seen * 100) : null; }
+/* korte regel: "4× getoond · 3 van 4 goed (75%)" */
+function statsLine(id, kort){
+  const p = pr(id);
+  if (!p.shown) return kort ? '' : 'Nog niet geoefend';
+  const g = p.seen ? `${p.ok} van ${p.seen} goed (${pct(p)}%)` : 'nog niet beantwoord';
+  return kort ? `${p.shown}× · ${p.seen ? pct(p)+'%' : '–'}` : `${p.shown}× getoond · ${g}`;
+}
 
 /* ---------- data ---------- */
 async function loadData(){
@@ -304,8 +328,11 @@ function pool(){
   });
 }
 function weightedPick(list, n){
-  // gewicht: ken ik nog niet 3, nieuw 2, ken ik 1 ; zonder herhaling
-  const items = list.map(c => ({c, w: status(c.id)==='u'?3 : status(c.id)===null?2 : 1}));
+  // gewicht: ken ik nog niet 3, nieuw 2, ken ik 1; bijgesteld met je score:
+  // vaak fout (minder dan 60% goed na 2+ antwoorden) +1, vrijwel altijd goed (90%+ na 3+ antwoorden) gehalveerd
+  const weight = c => { const p = pr(c.id); let w = p.s==='u' ? 3 : p.s===null ? 2 : 1;
+    if (p.seen>=2 && pct(p)<60) w += 1; if (p.seen>=3 && pct(p)>=90) w /= 2; return w; };
+  const items = list.map(c => ({c, w: weight(c)}));
   const out = [];
   while (items.length && (n===0 || out.length<n)) {
     const tot = items.reduce((a,b)=>a+b.w,0); let r = Math.random()*tot, k=0;
@@ -453,7 +480,7 @@ function buildLeerQueue(p){
 }
 
 /* ---------- render vraag ---------- */
-function headMod(c){ return `<div class="mod">Module ${c.module} · ${esc(modTitle(c.module))}</div>`; }
+function headMod(c, eerder){ return `<div class="mod">Module ${c.module} · ${esc(modTitle(c.module))}${eerder?`<span class="hist">${esc(eerder)}</span>`:''}</div>`; }
 function essBlock(c, withTitle){
   return `<div class="ess">${withTitle?`<div class="vraag">Essentie</div>`:''}<div class="regel">${esc(c.rechtsregel)}</div><div class="kern">${esc(c.kern)}</div><div class="leer">${esc(c.leerstuk_kort)} · ${esc(c.artikel_kort)}</div>${expanders(c)}</div>`;
 }
@@ -518,22 +545,24 @@ function renderQ(){
   document.getElementById('p-bar').style.width = (state.idx/state.queue.length*100)+'%';
   if (state.mode==='leer') return renderLeer(q);
   const c = state.queue[state.idx];
+  const eerder = pr(c.id).shown ? statsLine(c.id) : 'Nieuw'; // vóór het tellen van deze keer
+  markShown(c.id);
   if (state.mode==='naam') {
-    q.innerHTML = `<div class="q">${headMod(c)}<div class="naam">${esc(c.naam)}</div><div class="verw">${esc(c.verwijzing_kort)}</div><div id="ess"></div></div>
+    q.innerHTML = `<div class="q">${headMod(c, eerder)}<div class="naam">${esc(c.naam)}</div><div class="verw">${esc(c.verwijzing_kort)}</div><div id="ess"></div></div>
       <div class="acts"><button class="btn one" id="flip">Essentie weergeven</button></div>`;
     document.getElementById('flip').onclick = () => flipNaam(c);
   } else if (state.mode==='ess') {
-    q.innerHTML = `<div class="q">${headMod(c)}<div class="vraag">Welke uitspraak?</div><div class="regel">${esc(c.rechtsregel)}</div><div class="kern">${esc(c.kern)}</div><div id="ess"></div></div>
+    q.innerHTML = `<div class="q">${headMod(c, eerder)}<div class="vraag">Welke uitspraak?</div><div class="regel">${esc(c.rechtsregel)}</div><div class="kern">${esc(c.kern)}</div><div id="ess"></div></div>
       <div class="acts"><button class="btn one" id="flip">Naam weergeven</button></div>`;
     document.getElementById('flip').onclick = () => flipEss(c);
   } else if (state.mode==='mc-naam') {
     const opts = shuffle([c, ...distractors(c,3)]);
-    q.innerHTML = `<div class="q">${headMod(c)}<div class="vraag">Welke uitspraak hoort bij deze rechtsregel?</div><div class="regel">${esc(c.rechtsregel)}</div><div class="kern">${esc(c.kern)}</div><div id="ess"></div></div>
+    q.innerHTML = `<div class="q">${headMod(c, eerder)}<div class="vraag">Welke uitspraak hoort bij deze rechtsregel?</div><div class="regel">${esc(c.rechtsregel)}</div><div class="kern">${esc(c.kern)}</div><div id="ess"></div></div>
       <div class="opts">${opts.map((o,i)=>`<button class="opt" data-id="${o.id}"><span class="k">${i+1}</span><span>${esc(o.naam)}<span class="sub">${esc(o.verwijzing_kort)}</span></span></button>`).join('')}</div><div id="fb"></div><div class="acts hide" id="nextbox"><button class="btn one" id="next">Volgende</button></div>`;
     wireMC(c, opts);
   } else if (state.mode==='mc-ess') {
     const opts = shuffle([c, ...distractors(c,3)]);
-    q.innerHTML = `<div class="q">${headMod(c)}<div class="naam">${esc(c.naam)}</div><div class="verw">${esc(c.verwijzing_kort)}</div><div class="vraag" style="margin-top:14px">Welke rechtsregel hoort erbij?</div><div id="ess"></div></div>
+    q.innerHTML = `<div class="q">${headMod(c, eerder)}<div class="naam">${esc(c.naam)}</div><div class="verw">${esc(c.verwijzing_kort)}</div><div class="vraag" style="margin-top:14px">Welke rechtsregel hoort erbij?</div><div id="ess"></div></div>
       <div class="opts">${opts.map((o,i)=>`<button class="opt" data-id="${o.id}"><span class="k">${i+1}</span><span>${esc(o.rechtsregel)}</span></button>`).join('')}</div><div id="fb"></div><div class="acts hide" id="nextbox"><button class="btn one" id="next">Volgende</button></div>`;
     wireMC(c, opts);
   }
@@ -567,6 +596,7 @@ function wireMC(c, opts){
 }
 function renderLeer(q){
   const L = state.queue[state.idx];
+  L.opts.filter(o=>o.ok).forEach(o => markShown(o.c.id));
   q.innerHTML = `<div class="q"><div class="mod">Leerstuk</div><div class="naam" style="font-size:30px">${esc(L.art)}</div><div class="verw">Welke uitspraken gaan hierover? Kies alle juiste (${L.opts.filter(o=>o.ok).length} van de ${L.opts.length}).</div></div>
     <div class="opts">${L.opts.map((o,i)=>`<button class="opt" data-id="${o.c.id}"><span class="k">${i+1}</span><span>${esc(o.c.naam)}<span class="sub">Module ${o.c.module} · ${esc(o.c.verwijzing_kort)}</span></span></button>`).join('')}</div>
     <div id="fb"></div><div class="acts"><button class="btn one" id="check">Controleer</button></div>`;
@@ -599,7 +629,13 @@ document.addEventListener('keydown', e => {
 
 /* ---------- lijst & detail ---------- */
 document.getElementById('seg-lf').addEventListener('click', e => { const b=e.target.closest('button'); if(!b) return; state.lf=b.dataset.v; [...b.parentNode.children].forEach(x=>x.classList.toggle('on',x===b)); renderLijst(); });
+document.getElementById('seg-sort').addEventListener('click', e => { const b=e.target.closest('button'); if(!b) return; state.sort=b.dataset.v; [...b.parentNode.children].forEach(x=>x.classList.toggle('on',x===b)); renderLijst(); });
 document.getElementById('zoek').addEventListener('input', e => { state.zoek = e.target.value.toLowerCase(); renderLijst(); });
+function sortItems(items){
+  if (state.sort==='moeilijk') return items.slice().sort((a,b) => { const pa=pr(a.id), pb=pr(b.id); const sa = pa.seen?pct(pa):101, sb = pb.seen?pct(pb):101; return sa-sb || pb.bad-pa.bad; });
+  if (state.sort==='vaak') return items.slice().sort((a,b) => pr(b.id).shown - pr(a.id).shown);
+  return items;
+}
 function renderLijst(){
   const box = document.getElementById('lijst'); let html='';
   Object.keys(state.modules).sort().forEach(m => {
@@ -607,10 +643,16 @@ function renderLijst(){
       .filter(c => !state.zoek || (c.naam+' '+c.artikel_kort+' '+c.leerstuk_kort+' '+c.kern).toLowerCase().includes(state.zoek));
     if (!items.length) return;
     html += `<div class="modhead"><span class="t">Module ${m} · ${esc(modTitle(m))}</span><span class="c">${items.length}</span></div><div class="card list">` +
-      items.map(c => `<div class="it" data-id="${c.id}"><span class="dot ${status(c.id)||''}"></span><span class="n">${esc(c.naam)}</span><span class="v">${esc(c.verwijzing_kort)}</span></div>`).join('') + `</div>`;
+      sortItems(items).map(c => `<div class="it" data-id="${c.id}"><span class="dot ${status(c.id)||''}"></span><span class="n">${esc(c.naam)}<span class="sub2">${esc(c.verwijzing_kort)}</span></span><span class="v">${esc(statsLine(c.id, true))}</span></div>`).join('') + `</div>`;
   });
   box.innerHTML = html || '<p class="muted">Niets gevonden.</p>';
   box.querySelectorAll('.it').forEach(el => el.onclick = () => openDetail(el.dataset.id, 'lijst'));
+}
+function histBox(id){
+  const p = pr(id);
+  if (!p.shown) return '<span class="muted">Nog niet geoefend</span>';
+  const d = p.last ? new Date(p.last).toLocaleDateString('nl-NL', {day:'numeric', month:'long'}) : '';
+  return `<span><b>${p.shown}×</b> getoond</span><span><b>${p.seen}×</b> beantwoord</span><span style="color:var(--green)"><b>${p.ok}</b> goed</span><span style="color:var(--red)"><b>${p.bad}</b> fout</span>${p.seen?`<span><b>${pct(p)}%</b> score</span>`:''}${d?`<span class="muted">laatst ${d}</span>`:''}`;
 }
 /* detail: onthoudt waar je vandaan kwam (lijst, lopende ronde, eindscherm) zodat "Terug" daarheen gaat */
 let detailFrom = 'lijst';
@@ -619,13 +661,13 @@ function openDetail(id, from){
   const c = state.byId[id]; if(!c) return;
   if (from && from!=='detail') detailFrom = from;
   const det = document.getElementById('det');
-  det.innerHTML = `<div class="q">${headMod(c)}<div class="naam">${esc(c.naam)}</div><div class="verw">${esc(c.verwijzing)}</div>${essBlock(c,true)}</div>
+  det.innerHTML = `<div class="q">${headMod(c)}<div class="naam">${esc(c.naam)}</div><div class="verw">${esc(c.verwijzing)}</div><div class="histbox" id="d-hist">${histBox(id)}</div>${essBlock(c,true)}</div>
     <div class="acts"><button class="btn" id="d-no">Ken ik nog niet</button><button class="btn" id="d-yes">Ken ik</button></div>`;
   wireExpanders(det);
-  const paint = () => { const s = status(id); document.getElementById('d-no').className = 'btn ' + (s==='u'?'red':'ghost'); document.getElementById('d-yes').className = 'btn ' + (s==='k'?'green':'ghost'); };
+  const paint = () => { const s = status(id); document.getElementById('d-hist').innerHTML = histBox(id); document.getElementById('d-no').className = 'btn ' + (s==='u'?'red':'ghost'); document.getElementById('d-yes').className = 'btn ' + (s==='k'?'green':'ghost'); };
   paint();
-  document.getElementById('d-no').onclick = () => { mark(id,false); paint(); toast('Gemarkeerd: ken ik nog niet'); };
-  document.getElementById('d-yes').onclick = () => { mark(id,true); paint(); toast('Gemarkeerd: ken ik'); };
+  document.getElementById('d-no').onclick = () => { mark(id,false,false); paint(); toast('Gemarkeerd: ken ik nog niet'); };
+  document.getElementById('d-yes').onclick = () => { mark(id,true,false); paint(); toast('Gemarkeerd: ken ik'); };
   document.getElementById('det-back').textContent = BACK_LABEL[detailFrom] || BACK_LABEL.lijst;
   showTab('detail');
 }
@@ -633,13 +675,14 @@ document.getElementById('det-back').onclick = () => { const to = detailFrom; det
 
 /* ---------- meer ---------- */
 function renderMeer(){
-  const box = document.getElementById('meer-stats'); let html='';
+  const box = document.getElementById('meer-stats'); let html=''; const T={sh:0,se:0,ok:0};
   Object.keys(state.modules).sort().forEach(m => {
     const all = state.cases.filter(c=>c.module===m); if(!all.length) return;
-    let k=0,u=0; all.forEach(c=>{const s=status(c.id); if(s==='k')k++; else if(s==='u')u++;}); const n=all.length-k-u;
-    html += `<div style="margin-bottom:12px"><div class="row" style="justify-content:space-between"><span style="font-size:14px"><b>${m}</b> ${esc(modTitle(m))}</span><span class="muted">${k}/${all.length} gekend</span></div><div class="bar"><i class="k" style="width:${k/all.length*100}%"></i><i class="u" style="width:${u/all.length*100}%"></i><i class="n" style="width:${n/all.length*100}%"></i></div></div>`;
+    let k=0,u=0,sh=0,se=0,ok=0; all.forEach(c=>{const p=pr(c.id); if(p.s==='k')k++; else if(p.s==='u')u++; sh+=p.shown; se+=p.seen; ok+=p.ok;}); const n=all.length-k-u;
+    T.sh+=sh; T.se+=se; T.ok+=ok;
+    html += `<div style="margin-bottom:12px"><div class="row" style="justify-content:space-between"><span style="font-size:14px"><b>${m}</b> ${esc(modTitle(m))}</span><span class="muted">${k}/${all.length} gekend${se?` · ${Math.round(ok/se*100)}% goed`:''}</span></div><div class="bar"><i class="k" style="width:${k/all.length*100}%"></i><i class="u" style="width:${u/all.length*100}%"></i><i class="n" style="width:${n/all.length*100}%"></i></div></div>`;
   });
-  box.innerHTML = html;
+  box.innerHTML = `<div class="histbox" style="margin-bottom:16px"><span><b>${T.sh}</b> keer een uitspraak getoond</span><span><b>${T.se}</b> antwoorden</span>${T.se?`<span><b>${Math.round(T.ok/T.se*100)}%</b> goed</span>`:''}</div>` + html;
 }
 function exportCode(){ return btoa(unescape(encodeURIComponent(JSON.stringify({v:1, t:Date.now(), p:state.progress})))); }
 document.getElementById('exp-copy').onclick = async () => { const code = exportCode(); document.getElementById('imp-code').value = code; try { await navigator.clipboard.writeText(code); toast('Code gekopieerd'); } catch(e){ toast('Selecteer en kopieer de code hieronder'); } };
@@ -657,7 +700,7 @@ document.getElementById('imp-go').onclick = () => {
     if (!obj || typeof obj.p !== 'object') throw new Error('geen voortgang');
     Object.entries(obj.p).forEach(([id,p]) => {
       if (!state.byId[id] || !p || !['k','u',null].includes(p.s)) return; // alleen bekende uitspraken en geldige statussen
-      const cur = state.progress[id]; if (!cur || (p.t||0) > (cur.t||0)) { state.progress[id]={s:p.s, seen:+p.seen||0, ok:+p.ok||0, bad:+p.bad||0, t:+p.t||0}; n++; }
+      const cur = state.progress[id]; if (!cur || (p.t||0) > (cur.t||0)) { state.progress[id]={s:p.s, shown:+p.shown||+p.seen||0, seen:+p.seen||0, ok:+p.ok||0, bad:+p.bad||0, t:+p.t||0, last:+p.last||0}; n++; }
     });
     saveProgress(); toast(`${n} beoordelingen geïmporteerd`); renderMeer(); renderTopStat();
   } catch(e){ toast('Code niet herkend'); }
