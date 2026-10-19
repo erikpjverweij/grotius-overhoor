@@ -156,6 +156,56 @@ for c in cases:
     m = re.match(r'^(.*?\d{4})', c['verwijzing'])
     c['verwijzing_kort'] = m.group(1) if m else c['verwijzing'][:40]
 
+# ---------------------------------------------------------------------------
+# Dubbelen samenvoegen: dezelfde uitspraak (zelfde ECLI) staat soms in meer modules of is in één
+# module in deelregels gesplitst (12.2-12.4). Er blijft één kaart over:
+#  - id, naam en rechtsregel van de eerste vermelding (laagste modulenummer);
+#  - 'modules' = alle modules waarin de uitspraak voorkomt (voor de modulefilter);
+#  - 'invalshoeken' = de rechtsregel(s) uit de andere vermelding(en), als die afwijken;
+#  - 'ook_bekend_als' = andere roepnamen (bijv. Soldeermachine voor Vivat/ATF);
+#  - 'samengevoegd' (op topniveau) = oude id → nieuwe id, zodat de app eerdere voortgang kan overzetten.
+def zonder_deelkop(naam):
+    return re.sub(r'\s*\([a-z]\)\s.*$', '', naam).strip()
+groepen = {}
+for c in cases:
+    sleutel = (c['ecli'] or '').strip().upper() or ('ID:' + c['id'])
+    groepen.setdefault(sleutel, []).append(c)
+samengevoegd = {}
+nieuw = []
+for c in cases:
+    g = groepen[(c['ecli'] or '').strip().upper() or ('ID:' + c['id'])]
+    if g[0] is not c:
+        continue  # wordt opgenomen in de eerste vermelding
+    c['modules'] = sorted({x['module'] for x in g})
+    c['invalshoeken'] = []
+    c['ook_bekend_als'] = []
+    oorspronkelijke_naam = c['naam']
+    if len(g) > 1:
+        if len({x['module'] for x in g}) == 1:
+            c['naam'] = zonder_deelkop(c['naam'])   # deelregels uit één module: "(a) …" weg uit de naam
+        for x in g[1:]:
+            samengevoegd[x['id']] = c['id']
+            alias = zonder_deelkop(x['naam'])
+            if alias.lower() != c['naam'].split(' (')[0].lower() and alias not in c['ook_bekend_als']:
+                c['ook_bekend_als'].append(alias)
+            if x['verband'] and x['verband'] not in c['verband']:
+                c['verband'] = (c['verband'] + '\n' if c['verband'] else '') + x['verband']
+            if x['rechtsregel'] != c['rechtsregel']:
+                c['invalshoeken'].append({
+                    'module': x['module'], 'naam': x['naam'], 'leerstuk_kort': x['leerstuk_kort'],
+                    'artikel_kort': x['artikel_kort'], 'rechtsregel': x['rechtsregel'],
+                    'citaat': x['citaat'], 'bron_citaat': x['bron_citaat']})
+        # bij deelregels in één module: ook de eerste regel als invalshoek labelen
+        if len({x['module'] for x in g}) == 1:
+            deel = re.search(r'\(([a-z])\)\s(.*)$', oorspronkelijke_naam)
+            if deel:
+                c['leerstuk_kort'] = f"({deel.group(1)}) {deel.group(2)}"
+        c['ook_onder'] = ''
+    c['zelfde_als'] = []
+    nieuw.append(c)
+cases = nieuw
+print(f'Samengevoegd: {len(samengevoegd)} dubbele vermeldingen → {len(cases)} unieke uitspraken')
+
 # Verband-links: zoek namen van andere uitspraken in de verband-tekst.
 # Match op de volledige naam én op de naam zonder toevoeging tussen haken ("SnowWorld/ABN AMRO (liquiditeitspremie)" → "SnowWorld/ABN AMRO").
 # Per link wordt de gematchte tekst bewaard (verband_links) zodat de app precies die tekst klikbaar maakt; langste match wint bij overlap.
@@ -163,7 +213,7 @@ def naamsleutel(n):
     return re.split(r'\s[\(\[]', n)[0].strip()
 kandidaten = []  # (tekst, id)
 for x in cases:
-    for t in {x['naam'], naamsleutel(x['naam'])}:
+    for t in {x['naam'], naamsleutel(x['naam']), *x.get('ook_bekend_als', [])}:
         if len(t) >= 4:
             kandidaten.append((t, x['id']))
 kandidaten.sort(key=lambda k: -len(k[0]))
@@ -194,6 +244,7 @@ data = {
     'versie': '19 augustus 2026 (verbanden 16 sept, modules 10/20/22 9 okt 2026)',
     'modules': modules,
     'totaal': len(cases),
+    'samengevoegd': samengevoegd,
     'cases': cases,
 }
 OUT.write_text(json.dumps(data, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')

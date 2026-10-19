@@ -119,6 +119,9 @@ h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--text
 .list .v{color:var(--text2);font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
 .list .sub2{display:block;color:var(--text3);font-size:12px;margin-top:2px}
 .q .mod .hist{float:right;text-transform:none;letter-spacing:0;color:var(--text3)}
+.alias{color:var(--accent2);font-size:13px;margin-top:6px}
+.inval{margin-top:12px;padding:10px 12px;border-left:3px solid var(--border2);background:var(--bg2);border-radius:0 8px 8px 0;font-size:15px;line-height:1.5}
+.inval .ik{font-size:12px;color:var(--text3);margin-bottom:4px;letter-spacing:.02em}
 .histbox{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--text2);margin-top:12px}
 .histbox b{color:var(--text)}
 .modhead{display:flex;justify-content:space-between;align-items:baseline;margin:18px 0 6px}
@@ -139,7 +142,7 @@ textarea.code{width:100%;min-height:90px;background:var(--bg2);border:1px solid 
 <header class="app">
   <div>
     <h1 class="app-title">Grotius <em>O&amp;A</em></h1>
-    <p class="app-subtitle">Rechtspraak · 204 uitspraken · 2026</p>
+    <p class="app-subtitle" id="subtitle">Rechtspraak · 2026</p>
   </div>
   <nav class="tabs">
     <button data-tab="start" class="active">Oefenen</button>
@@ -282,6 +285,9 @@ function mark(id, known, counts=true){
   state.progress[id] = p; saveProgress();
 }
 function status(id){ return pr(id).s; } // 'k' | 'u' | null
+function inMod(c, m){ return (c.modules||[c.module]).includes(m); }
+function inSel(c){ return (c.modules||[c.module]).some(m => state.selMods.has(m)); }
+function modLabel(c){ return (c.modules||[c.module]).join(' en '); }
 function pct(p){ return p.seen ? Math.round(p.ok / p.seen * 100) : null; }
 /* korte regel: "4× getoond · 3 van 4 goed (75%)" */
 function statsLine(id, kort){
@@ -300,10 +306,26 @@ async function loadData(){
     state.data = await r.json();
   }
   state.cases = state.data.cases; state.modules = state.data.modules;
-  state.cases.forEach(c => { state.byId[c.id] = c; c.art = baseArt(c.artikel_kort); c.inkomend = []; });
+  state.cases.forEach(c => { state.byId[c.id] = c; c.art = baseArt(c.artikel_kort); c.inkomend = []; if (!c.modules) c.modules = [c.module]; });
+  migrateMerged(state.data.samengevoegd || {});
   // inkomende verbanden: het document noemt een verband vaak maar bij één van de twee uitspraken
   state.cases.forEach(c => (c.verband_ids||[]).forEach(id => { const o = state.byId[id]; if (o && !o.inkomend.includes(c.id)) o.inkomend.push(c.id); }));
+  document.getElementById('subtitle').textContent = `Rechtspraak · ${state.cases.length} uitspraken · 2026`;
   document.getElementById('bron-info').textContent = `${state.data.bron} · versie ${state.data.versie} · ${state.cases.length} uitspraken`;
+}
+/* Voortgang van kaarten die zijn samengevoegd (dubbelen) overzetten naar de kaart die blijft */
+function migrateMerged(map){
+  let changed = false;
+  Object.entries(map).forEach(([oud, nieuw]) => {
+    const o = state.progress[oud]; if (!o) return;
+    const n = state.progress[nieuw] ? pr(nieuw) : {s:null, shown:0, seen:0, ok:0, bad:0, t:0, last:0};
+    const op = {shown:Math.max(o.shown||0,o.seen||0), seen:o.seen||0, ok:o.ok||0, bad:o.bad||0};
+    ['shown','seen','ok','bad'].forEach(k => n[k] = (n[k]||0) + op[k]);
+    if ((o.t||0) > (n.t||0)) { n.s = o.s; n.t = o.t; }
+    n.last = Math.max(n.last||0, o.last||0);
+    state.progress[nieuw] = n; delete state.progress[oud]; changed = true;
+  });
+  if (changed) saveProgress();
 }
 function baseArt(a){
   // "art. 6:162 BW (lid 2)" → "art. 6:162 BW"; onbekende wetten: alles vóór de haak
@@ -319,7 +341,7 @@ function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.rand
 
 /* ---------- selectie ---------- */
 function pool(){
-  return state.cases.filter(c => state.selMods.has(c.module)).filter(c => {
+  return state.cases.filter(inSel).filter(c => {
     const s = status(c.id);
     if (state.status==='nieuw') return s===null;
     if (state.status==='u') return s==='u';
@@ -352,7 +374,7 @@ function updateSelInfo(){
   renderTopStat();
 }
 function renderTopStat(){
-  const all = state.cases.filter(c=>state.selMods.has(c.module));
+  const all = state.cases.filter(inSel);
   let k=0,u=0; all.forEach(c=>{ const s=status(c.id); if(s==='k')k++; else if(s==='u')u++; });
   const nn = all.length-k-u;
   document.getElementById('stat-top').innerHTML = `<span><b>${all.length}</b> geselecteerd</span><span style="color:var(--green)"><b>${k}</b> ken ik</span><span style="color:var(--red)"><b>${u}</b> nog niet</span><span><b>${nn}</b> nieuw</span>`;
@@ -363,9 +385,9 @@ function renderTopStat(){
 /* ---------- start-scherm ---------- */
 function renderModChips(){
   const box = document.getElementById('mod-chips'); box.innerHTML='';
-  const mods = Object.keys(state.modules).sort().filter(m => state.cases.some(c=>c.module===m));
+  const mods = Object.keys(state.modules).sort().filter(m => state.cases.some(c=>inMod(c,m)));
   mods.forEach(m => {
-    const all = state.cases.filter(c=>c.module===m); let k=0,u=0;
+    const all = state.cases.filter(c=>inMod(c,m)); let k=0,u=0;
     all.forEach(c=>{ const s=status(c.id); if(s==='k')k++; else if(s==='u')u++; });
     const on = state.selMods.has(m);
     const b = document.createElement('button'); b.className='modrow'+(on?' on':''); b.setAttribute('aria-pressed', on);
@@ -428,7 +450,7 @@ function endSession(){
   document.getElementById('end-score').textContent = r.length ? `${ok} / ${r.length}` : '–';
   document.getElementById('end-detail').textContent = r.length ? `${Math.round(ok/r.length*100)}% goed · ${state.mode==='leer'?'leerstukvragen':'uitspraken'}` : 'Geen vragen beantwoord.';
   const wrong = r.filter(x=>!x.ok);
-  document.getElementById('end-list').innerHTML = wrong.length ? `<h2>Nog eens bekijken</h2><div class="list">` + wrong.map(x => x.ids.map(id => { const c=state.byId[id]; return `<div class="it" data-id="${id}"><span class="dot u"></span><span class="n">${esc(c.naam)}</span><span class="v">${c.module}</span></div>`; }).join('')).join('') + `</div>` : `<p class="muted">Alles goed. Mooi.</p>`;
+  document.getElementById('end-list').innerHTML = wrong.length ? `<h2>Nog eens bekijken</h2><div class="list">` + wrong.map(x => x.ids.map(id => { const c=state.byId[id]; return `<div class="it" data-id="${id}"><span class="dot u"></span><span class="n">${esc(c.naam)}</span><span class="v">${esc(modLabel(c))}</span></div>`; }).join('')).join('') + `</div>` : `<p class="muted">Alles goed. Mooi.</p>`;
   document.getElementById('end-list').querySelectorAll('.it').forEach(el => el.onclick = () => openDetail(el.dataset.id, 'end'));
   showTab('end');
 }
@@ -443,9 +465,9 @@ function sameCase(a, b){ return a.id===b.id || (a.zelfde_als||[]).includes(b.id)
 function distractors(c, n){
   const tiers = [
     [...(c.verband_ids||[]), ...(c.inkomend||[])].map(id=>state.byId[id]).filter(Boolean),
-    state.cases.filter(x => x.module===c.module),
+    state.cases.filter(x => x.modules.some(m => c.modules.includes(m))),
     state.cases.filter(x => x.art && x.art===c.art),
-    state.cases.filter(x => state.selMods.has(x.module)),
+    state.cases.filter(inSel),
     state.cases
   ].map(t => shuffle(t.slice()));
   const out = [];
@@ -469,7 +491,7 @@ function buildLeerQueue(p){
     // juiste antwoorden: geen twee met dezelfde naam
     const correct = []; for (const c of shuffle(q.items.slice())) { if (correct.length>=3) break; if (!correct.some(k=>sameCase(k,c))) correct.push(c); }
     // afleiders: ander artikel, en niet dezelfde uitspraak als één van ALLE items bij dit artikel
-    const others = []; for (const c of shuffle(state.cases.filter(x => state.selMods.has(x.module) && x.art!==q.art))) {
+    const others = []; for (const c of shuffle(state.cases.filter(x => inSel(x) && x.art!==q.art))) {
       if (others.length >= 6-correct.length) break;
       if (q.items.some(k=>sameCase(k,c)) || others.some(o=>sameCase(o,c))) continue; others.push(c);
     }
@@ -480,15 +502,25 @@ function buildLeerQueue(p){
 }
 
 /* ---------- render vraag ---------- */
-function headMod(c, eerder){ return `<div class="mod">Module ${c.module} · ${esc(modTitle(c.module))}${eerder?`<span class="hist">${esc(eerder)}</span>`:''}</div>`; }
+function headMod(c, eerder){ const t = c.modules.length>1 ? `Modules ${c.modules.join(' en ')}` : `Module ${c.module} · ${esc(modTitle(c.module))}`; return `<div class="mod">${t}${eerder?`<span class="hist">${esc(eerder)}</span>`:''}</div>`; }
+function aliasLine(c){ return (c.ook_bekend_als||[]).length ? `<div class="alias">Ook bekend als ${c.ook_bekend_als.map(esc).join(', ')}</div>` : ''; }
+/* andere invalshoek(en): rechtsregel uit de andere module, of de deelregels (b), (c) van één uitspraak */
+function invalBlock(c){
+  if (!(c.invalshoeken||[]).length) return '';
+  return c.invalshoeken.map(v => {
+    const deel = (v.naam.match(/\(([a-z])\)\s(.*)$/)||[]);
+    const kop = deel[1] ? `(${deel[1]}) ${esc(deel[2])}` : `In module ${esc(v.module)} · ${esc(modTitle(v.module))}${v.naam!==c.naam?` (als ${esc(v.naam)})`:''}`;
+    return `<div class="inval"><div class="ik">${kop}</div><div>${esc(v.rechtsregel)}</div><div class="leer">${esc(v.leerstuk_kort)} · ${esc(v.artikel_kort)}</div></div>`;
+  }).join('');
+}
 function essBlock(c, withTitle){
-  return `<div class="ess">${withTitle?`<div class="vraag">Essentie</div>`:''}<div class="regel">${esc(c.rechtsregel)}</div><div class="kern">${esc(c.kern)}</div><div class="leer">${esc(c.leerstuk_kort)} · ${esc(c.artikel_kort)}</div>${expanders(c)}</div>`;
+  return `<div class="ess">${withTitle?`<div class="vraag">Essentie</div>`:''}<div class="regel">${esc(c.rechtsregel)}</div>${invalBlock(c)}<div class="kern">${esc(c.kern)}</div><div class="leer">${esc(c.leerstuk_kort)} · ${esc(c.artikel_kort)}</div>${expanders(c)}</div>`;
 }
 function mcDetail(c){
   // Na een meerkeuzeantwoord niet herhalen wat al in beeld staat: bij "kies de naam" staan rechtsregel en kern al bovenaan,
   // bij "kies de essentie" is de juiste rechtsregel al groen gemarkeerd. Alleen aanvullende informatie tonen.
   const kern = state.mode==='mc-ess' ? `<div class="kern">${esc(c.kern)}</div>` : '';
-  return `<div class="ess">${kern}<div class="leer">${esc(c.leerstuk_kort)} · ${esc(c.artikel_kort)}</div>${expanders(c)}</div>`;
+  return `<div class="ess">${kern}<div class="leer">${esc(c.leerstuk_kort)} · ${esc(c.artikel_kort)}</div>${invalBlock(c)}${expanders(c)}</div>`;
 }
 function expanders(c){
   // file://-links worden door browsers geblokkeerd vanaf https; alleen tonen als de app zelf lokaal is geopend
@@ -532,7 +564,7 @@ function wireExpanders(root){
   root.querySelectorAll('[data-open]').forEach(a => a.onclick = e => { e.preventDefault(); openDetail(a.dataset.open, root.id==='det' ? 'detail' : (root.id==='q' ? 'run' : 'lijst')); });
 }
 function askClaude(c){
-  const prompt = `Ik studeer voor de Grotius specialisatieopleiding Onderneming en Aansprakelijkheid (module ${c.module}: ${state.modules[c.module].titel}). Leg mij deze uitspraak helder uit en geef extra context: waarom is hij belangrijk, hoe verhoudt hij zich tot andere uitspraken, en wat moet ik onthouden voor het tentamen?\n\nUitspraak: ${c.verwijzing}\nKern: ${c.kern}\nLeerstuk: ${c.leerstuk}\nRechtsregel: ${c.rechtsregel}\nCitaat: ${c.citaat}`;
+  const prompt = `Ik studeer voor de Grotius specialisatieopleiding Onderneming en Aansprakelijkheid (module ${c.modules.map(m=>m+': '+state.modules[m].titel).join('; ')}). Leg mij deze uitspraak helder uit en geef extra context: waarom is hij belangrijk, hoe verhoudt hij zich tot andere uitspraken, en wat moet ik onthouden voor het tentamen?\n\nUitspraak: ${c.verwijzing}\nKern: ${c.kern}\nLeerstuk: ${c.leerstuk}\nRechtsregel: ${c.rechtsregel}\nCitaat: ${c.citaat}`;
   window.open('https://claude.ai/new?q=' + encodeURIComponent(prompt), '_blank', 'noopener,noreferrer');
 }
 
@@ -548,7 +580,7 @@ function renderQ(){
   const eerder = pr(c.id).shown ? statsLine(c.id) : 'Nieuw'; // vóór het tellen van deze keer
   markShown(c.id);
   if (state.mode==='naam') {
-    q.innerHTML = `<div class="q">${headMod(c, eerder)}<div class="naam">${esc(c.naam)}</div><div class="verw">${esc(c.verwijzing_kort)}</div><div id="ess"></div></div>
+    q.innerHTML = `<div class="q">${headMod(c, eerder)}<div class="naam">${esc(c.naam)}</div>${aliasLine(c)}<div class="verw">${esc(c.verwijzing_kort)}</div><div id="ess"></div></div>
       <div class="acts"><button class="btn one" id="flip">Essentie weergeven</button></div>`;
     document.getElementById('flip').onclick = () => flipNaam(c);
   } else if (state.mode==='ess') {
@@ -576,7 +608,7 @@ function flipNaam(c){
 }
 function flipEss(c){
   if (state.flipped || locked()) return; state.flipped=true;
-  document.getElementById('ess').innerHTML = `<div class="ess"><div class="vraag">Uitspraak</div><div class="naam" style="font-size:28px">${esc(c.naam)}</div><div class="verw">${esc(c.verwijzing)}</div><div class="leer">${esc(c.leerstuk_kort)} · ${esc(c.artikel_kort)}</div>${expanders(c)}</div>`;
+  document.getElementById('ess').innerHTML = `<div class="ess"><div class="vraag">Uitspraak</div><div class="naam" style="font-size:28px">${esc(c.naam)}</div>${aliasLine(c)}<div class="verw">${esc(c.verwijzing)}</div><div class="leer">${esc(c.leerstuk_kort)} · ${esc(c.artikel_kort)}</div>${expanders(c)}</div>`;
   wireExpanders(document.getElementById('q'));
   document.querySelector('#tab-run .acts').innerHTML = `<button class="btn red" id="no">Wist ik niet</button><button class="btn green" id="yes">Wist ik</button>`;
   document.getElementById('no').onclick = () => { mark(c.id,false); state.results.push({ids:[c.id],ok:false}); next(); };
@@ -598,7 +630,7 @@ function renderLeer(q){
   const L = state.queue[state.idx];
   L.opts.filter(o=>o.ok).forEach(o => markShown(o.c.id));
   q.innerHTML = `<div class="q"><div class="mod">Leerstuk</div><div class="naam" style="font-size:30px">${esc(L.art)}</div><div class="verw">Welke uitspraken gaan hierover? Kies alle juiste (${L.opts.filter(o=>o.ok).length} van de ${L.opts.length}).</div></div>
-    <div class="opts">${L.opts.map((o,i)=>`<button class="opt" data-id="${o.c.id}"><span class="k">${i+1}</span><span>${esc(o.c.naam)}<span class="sub">Module ${o.c.module} · ${esc(o.c.verwijzing_kort)}</span></span></button>`).join('')}</div>
+    <div class="opts">${L.opts.map((o,i)=>`<button class="opt" data-id="${o.c.id}"><span class="k">${i+1}</span><span>${esc(o.c.naam)}<span class="sub">Module ${esc(modLabel(o.c))} · ${esc(o.c.verwijzing_kort)}</span></span></button>`).join('')}</div>
     <div id="fb"></div><div class="acts"><button class="btn one" id="check">Controleer</button></div>`;
   const btns=[...q.querySelectorAll('.opt')];
   btns.forEach(b => b.onclick = () => { if(state.answered) return; b.classList.toggle('sel'); L.sel.has(b.dataset.id)?L.sel.delete(b.dataset.id):L.sel.add(b.dataset.id); });
@@ -639,8 +671,8 @@ function sortItems(items){
 function renderLijst(){
   const box = document.getElementById('lijst'); let html='';
   Object.keys(state.modules).sort().forEach(m => {
-    const items = state.cases.filter(c => c.module===m).filter(c => { const s=status(c.id); return state.lf==='alle' || (state.lf==='nieuw'&&s===null) || s===state.lf; })
-      .filter(c => !state.zoek || (c.naam+' '+c.artikel_kort+' '+c.leerstuk_kort+' '+c.kern).toLowerCase().includes(state.zoek));
+    const items = state.cases.filter(c => inMod(c,m)).filter(c => { const s=status(c.id); return state.lf==='alle' || (state.lf==='nieuw'&&s===null) || s===state.lf; })
+      .filter(c => !state.zoek || (c.naam+' '+(c.ook_bekend_als||[]).join(' ')+' '+c.artikel_kort+' '+c.leerstuk_kort+' '+c.kern).toLowerCase().includes(state.zoek));
     if (!items.length) return;
     html += `<div class="modhead"><span class="t">Module ${m} · ${esc(modTitle(m))}</span><span class="c">${items.length}</span></div><div class="card list">` +
       sortItems(items).map(c => `<div class="it" data-id="${c.id}"><span class="dot ${status(c.id)||''}"></span><span class="n">${esc(c.naam)}<span class="sub2">${esc(c.verwijzing_kort)}</span></span><span class="v">${esc(statsLine(c.id, true))}</span></div>`).join('') + `</div>`;
@@ -661,7 +693,7 @@ function openDetail(id, from){
   const c = state.byId[id]; if(!c) return;
   if (from && from!=='detail') detailFrom = from;
   const det = document.getElementById('det');
-  det.innerHTML = `<div class="q">${headMod(c)}<div class="naam">${esc(c.naam)}</div><div class="verw">${esc(c.verwijzing)}</div><div class="histbox" id="d-hist">${histBox(id)}</div>${essBlock(c,true)}</div>
+  det.innerHTML = `<div class="q">${headMod(c)}<div class="naam">${esc(c.naam)}</div>${aliasLine(c)}<div class="verw">${esc(c.verwijzing)}</div><div class="histbox" id="d-hist">${histBox(id)}</div>${essBlock(c,true)}</div>
     <div class="acts"><button class="btn" id="d-no">Ken ik nog niet</button><button class="btn" id="d-yes">Ken ik</button></div>`;
   wireExpanders(det);
   const paint = () => { const s = status(id); document.getElementById('d-hist').innerHTML = histBox(id); document.getElementById('d-no').className = 'btn ' + (s==='u'?'red':'ghost'); document.getElementById('d-yes').className = 'btn ' + (s==='k'?'green':'ghost'); };
@@ -677,7 +709,7 @@ document.getElementById('det-back').onclick = () => { const to = detailFrom; det
 function renderMeer(){
   const box = document.getElementById('meer-stats'); let html=''; const T={sh:0,se:0,ok:0};
   Object.keys(state.modules).sort().forEach(m => {
-    const all = state.cases.filter(c=>c.module===m); if(!all.length) return;
+    const all = state.cases.filter(c=>inMod(c,m)); if(!all.length) return;
     let k=0,u=0,sh=0,se=0,ok=0; all.forEach(c=>{const p=pr(c.id); if(p.s==='k')k++; else if(p.s==='u')u++; sh+=p.shown; se+=p.seen; ok+=p.ok;}); const n=all.length-k-u;
     T.sh+=sh; T.se+=se; T.ok+=ok;
     html += `<div style="margin-bottom:12px"><div class="row" style="justify-content:space-between"><span style="font-size:14px"><b>${m}</b> ${esc(modTitle(m))}</span><span class="muted">${k}/${all.length} gekend${se?` · ${Math.round(ok/se*100)}% goed`:''}</span></div><div class="bar"><i class="k" style="width:${k/all.length*100}%"></i><i class="u" style="width:${u/all.length*100}%"></i><i class="n" style="width:${n/all.length*100}%"></i></div></div>`;

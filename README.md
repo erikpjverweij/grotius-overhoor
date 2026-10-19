@@ -15,7 +15,7 @@ Sinds 14 oktober 2026 beperkt tot rechtspraak. De eerdere kaartenapp (439 kaarte
 | Bestand | Functie |
 |---|---|
 | `index.html` | De app (één bestand: opmaak, logica, vijf oefenvormen) |
-| `cases.json` | 204 uitspraken, 19 modules (alleen uitspraken uit de jurisprudentielijsten van de syllabi; module 22 heeft geen voorgeschreven rechtspraak); wordt network-first geladen |
+| `cases.json` | 190 unieke uitspraken, 19 modules (alleen uitspraken uit de jurisprudentielijsten van de syllabi; module 22 heeft geen voorgeschreven rechtspraak). Een uitspraak die in meer modules staat is één kaart met alle modules in `modules` en de rechtsregel uit de andere module in `invalshoeken` |
 | `cases.js` | Zelfde data als JS-variabele, voor gebruik vanaf `file://` en als offline-fallback; bevat ook de mapnamen van de syllabi voor de knop "Open syllabus" |
 | `sw.js` | Service worker. `CACHE_NAME` verhogen bij elke wijziging aan index.html |
 | `manifest.webmanifest`, `icon-*.png` | PWA-configuratie |
@@ -33,6 +33,10 @@ Afleiders bij meerkeuze komen eerst uit het verband-blok van de uitspraak, dan u
 Bij elke essentie zijn uitklapbaar: feiten, letterlijk citaat, verband (uitgaand én inkomend, klikbaar), wettekst, bron en een knop "Vraag Claude" die claude.ai opent met de uitspraak als vraag. De bron noemt de pdf-pagina van de syllabus; een klikbare link naar de pdf verschijnt alleen als `index.html` rechtstreeks vanaf de pc wordt geopend (browsers staan geen link van een website naar een lokaal bestand toe).
 
 Na het pushen van een nieuwe versie haalt de app die bij de volgende opening zelf op en herlaadt één keer; tijdens een ronde wacht hij daarmee tot de ronde klaar is.
+
+## Dubbele uitspraken
+
+De generator voegt vermeldingen met dezelfde ECLI samen tot één kaart (14 vermeldingen, onder meer Vivat/ATF = Soldeermachine, Opsluiting in vriescel = B/Br, en de drie deelregels van de overzichtsuitspraak planschade). Die kaart doet mee bij elke module waarin de uitspraak voorkomt. Afwijkende rechtsregels uit de andere module staan als extra blok bij de essentie; andere roepnamen staan onder de naam en zijn doorzoekbaar. De app zet eerdere voortgang van de verdwenen kaarten automatisch over (lijst `samengevoegd` in cases.json).
 
 ## Voortgang
 
