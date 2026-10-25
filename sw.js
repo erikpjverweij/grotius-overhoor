@@ -7,7 +7,7 @@
  * Alle netwerkverzoeken omzeilen de HTTP-cache van de browser (GitHub Pages stuurt max-age=600),
  * zodat een nieuwe versie direct na het pushen doorkomt. Alleen geslaagde antwoorden worden bewaard.
  */
-const CACHE_NAME = 'grotius-rechtspraak-v12';
+const CACHE_NAME = 'grotius-rechtspraak-v13';
 const STATIC_ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './favicon.png', './cases.js'];
 
 const fresh = req => fetch(req, { cache: 'no-cache' });
