@@ -334,7 +334,10 @@ function baseArt(a){
   return m ? m[0] : s;
 }
 const MODES = ['naam','ess','mc-naam','mc-ess','leer'];
-function modTitle(m){ const t = (state.modules[m]||{}).titel||''; return t.length>48 ? t.slice(0,46)+'…' : t; }
+/* Niet verplicht voor het mondeling examen van 15 december 2026 (mededeling Grotius, 18 november 2026) */
+const NIET_VERPLICHT = new Set(['03','10','11','12','21','22']);
+function nv(m){ return NIET_VERPLICHT.has(m) ? ' (niet verplicht)' : ''; }
+function modTitle(m){ const t = (state.modules[m]||{}).titel||''; return (t.length>48 ? t.slice(0,46)+'…' : t) + nv(m); }
 function esc(s){ return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -400,7 +403,7 @@ function renderModChips(){
     const on = state.selMods.has(m);
     const b = document.createElement('button'); b.className='modrow'+(on?' on':''); b.setAttribute('aria-pressed', on);
     b.innerHTML = `<span class="cb">${on?'✓':''}</span><span class="nr">${esc(m)}</span>
-      <span class="body"><span class="tt">${esc(state.modules[m].titel)}</span>
+      <span class="body"><span class="tt">${esc(state.modules[m].titel + nv(m))}</span>
       <span class="meta">${all.length} uitspraken · ${k} ken ik${u?` · ${u} nog niet`:''}</span>
       <span class="mbar"><i class="k" style="width:${k/all.length*100}%"></i><i class="u" style="width:${u/all.length*100}%"></i></span></span>`;
     b.onclick = () => { on ? state.selMods.delete(m) : state.selMods.add(m); renderModChips(); persistSel(); updateSelInfo(); };
@@ -416,7 +419,9 @@ function restoreSel(){
     state.status = ['alle','nieuw','u','k','fout'].includes(s.status) ? s.status : 'alle';
     state.n = [0,10,25,50].includes(s.n) ? s.n : 25;
   } }catch(e){}
-  if(!state.selMods.size) Object.keys(state.modules).forEach(m=>state.selMods.add(m));
+  if(!state.selMods.size) Object.keys(state.modules).forEach(m=>{ if(!NIET_VERPLICHT.has(m)) state.selMods.add(m); });
+  // eenmalig: niet-verplichte modules uitzetten in een eerder opgeslagen selectie (18 november 2026)
+  try{ if(!localStorage.getItem(LS_KEY+'-nv1')){ NIET_VERPLICHT.forEach(m=>state.selMods.delete(m)); if(!state.selMods.size) Object.keys(state.modules).forEach(m=>{ if(!NIET_VERPLICHT.has(m)) state.selMods.add(m); }); localStorage.setItem(LS_KEY+'-nv1','1'); persistSel(); } }catch(e){}
   document.querySelectorAll('#modes .mode').forEach(b=>b.classList.toggle('active', b.dataset.mode===state.mode));
   document.querySelectorAll('#seg-status button').forEach(b=>b.classList.toggle('on', b.dataset.v===state.status));
   document.querySelectorAll('#seg-n button').forEach(b=>b.classList.toggle('on', +b.dataset.v===state.n));
